@@ -1,9 +1,15 @@
 package.path = package.path .. ";../?.lua"
 
+local function log(msg)
+    local f = assert(io.open("log.txt", "a+"))
+    f:write(msg.."\n")
+    assert(f:close())
+end  -- log
+
 local hotfix = require("hotfix")
-hotfix.log_error = print
-hotfix.log_info = print
-hotfix.log_debug = print
+hotfix.log_error = log
+hotfix.log_info = log
+hotfix.log_debug = log
 
 local TEST = "test.lua"
 

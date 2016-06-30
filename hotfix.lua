@@ -8,41 +8,8 @@ local M = {}
 local update_table
 local update_func
 
--- Update new function evn_f with upvalues of old function g_f.
--- Todo: name is not used? Add debug log...
-local function update_func(env_f, g_f, name, deep)
-    assert('function' == type(env_f))
-    assert('function' == type(g_f))
-    -- Todo: Check protection?
-    log_debug(deep .. "Update function " .. name)
-
-    -- Get upvalues of old function.
-    local old_upvalue_map = {}
-    for i = 1, math.huge do
-        local name, value = debug.getupvalue(g_f, i)
-        if not name then break end
-        old_upvalue_map[name] = value
-    end
-
-    -- Update new upvalues with old.
-    for i = 1, math.huge do
-        local name, value = debug.getupvalue(env_f, i)
-        if not name then break end
-        local old_value = old_upvalue_map[name]
-        if old_value then
-            if type(old_value) ~= type(value) then
-                debug.setupvalue(env_f, i, old_value)
-            elseif type(old_value) == 'function' then
-                update_func(value, old_value, name, deep..'  '..name..'  ')
-            elseif type(old_value) == 'table' then
-                update_table(value, old_value, name, deep..'  '..name..'  ')
-                debug.setupvalue(env_f, i, old_value)
-            else
-                debug.setupvalue(env_f, i, old_value)
-            end
-        end
-    end
-end  -- update_func()
+-- Visited signatures to prevent dead loop.
+local visited_sig = {}
 
 -- Todo: only need table?
 local protection = {
@@ -54,75 +21,96 @@ local protection = {
     _ENV = true,
 }
 
--- Visited signatures to prevent dead loop.
-local visited_sig = {}
+-- Update new function with upvalues of old function. Keep the old upvalues data.
+-- Parameter name and deep are only for log.
+local function update_func(new_func, old_func, name, deep)
+    assert('function' == type(new_func))
+    assert('function' == type(old_func))
+    -- Todo: Check protection
+    -- Todo: Check visited_sig
+    M.log_debug(deep .. "Update function " .. name)
 
--- Compare 2 tables and update new table env_t.
-function update_table(env_t, g_t, name, deep)
-    assert('table' == type(env_t))
-    assert('table' == type(g_t))
+    -- Get upvalues of old function.
+    local old_upvalue_map = {}
+    for i = 1, math.huge do
+        local name, value = debug.getupvalue(old_func, i)
+        if not name then break end
+        old_upvalue_map[name] = value
+    end
 
-    if protection[env_t] or protection[g_t] then return end
-    if env_t == g_t then return end  -- same address
+    -- Update new upvalues with old.
+    for i = 1, math.huge do
+        local name, value = debug.getupvalue(new_func, i)
+        if not name then break end
+        local old_value = old_upvalue_map[name]
+        if old_value then
+            if type(old_value) ~= type(value) then
+                debug.setupvalue(new_func, i, old_value)
+            elseif type(old_value) == 'function' then
+                update_func(value, old_value, name, deep..'  '..name..'  ')
+            elseif type(old_value) == 'table' then
+                update_table(value, old_value, name, deep..'  '..name..'  ')
+                debug.setupvalue(new_func, i, old_value)
+            else
+                debug.setupvalue(new_func, i, old_value)
+            end
+        end
+    end
+end  -- update_func()
 
-    local signature = tostring(g_t)..tostring(env_t)
+-- Compare 2 tables and update old table. Keep the old data.
+function update_table(new_table, old_table, name, deep)
+    assert('table' == type(new_table))
+    assert('table' == type(old_table))
+
+    if protection[new_table] or protection[old_table] then return end
+    if new_table == old_table then return end  -- same address
+
+    local signature = tostring(old_table)..tostring(new_table)
     if visited_sig[signature] then return end
     visited_sig[signature] = true
-    log_debug(deep .. "Update table " .. name)
+    M.log_debug(deep .. "Update table " .. name)
 
-    -- Compare env_t and g_t, and update g_t.
+    -- Compare 2 tables, and update old table.
     -- Same as _ENV and _G in hotfix()?
-    for name, value in pairs(env_t) do
-        local old_value = g_t[name]
-        if type(value) == type(old_value) then
-            if type(value) == 'function' then
-                update_func(value, old_value, name, deep..'  '..name..'  ')
-                g_t[name] = value
-            elseif type(value) == 'table' then
-                update_table(value, old_value, name, deep..'  '..name..'  ')
-            end
-        else
-            g_t[name] = value
+    for name, value in pairs(new_table) do
+        local old_value = old_table[name]
+        if type(value) ~= type(old_value) then
+            old_table[name] = value
+        elseif type(value) == 'function' then
+            update_func(value, old_value, name, deep..'  '..name..'  ')
+            old_table[name] = value  -- Set new function with old upvalues.
+        elseif type(value) == 'table' then
+            update_table(value, old_value, name, deep..'  '..name..'  ')
         end
     end  -- for
 
     -- Update metatable.
-    local old_meta = debug.getmetatable(g_t)
-    local new_meta = debug.getmetatable(env_t)
+    local old_meta = debug.getmetatable(old_table)
+    local new_meta = debug.getmetatable(new_table)
     if type(old_meta) == 'table' and type(new_meta) == 'table' then
         update_table(new_meta, old_meta, name..'s Meta', deep..'  '..name..'s Meta'..'  ' )
     end
 end  -- update_table()
 
-function M.hotfix(chunk, check_name)
+function M.hotfix(chunk, chunk_name)
     -- Load data to _ENV.
     local env = {}
     setmetatable(env, { __index = _G })
     local _ENV = env
-    local f, err = load(chunk, check_name, 't', env)
+    local f, err = load(chunk, chunk_name, 't', env)
     assert(f, err)
     assert(pcall(f))
 
-    -- Compare _ENV and _G, and update _G.
-    for name, value in pairs(env) do
-        local g_value = _G[name]
-        if type(g_value) ~= type(value) then
-            log_debug(string.format("Update %s from %s to %s.",
-                name, type(g_value), type(value)))
-            _G[name] = value
-        elseif type(value) == 'function' then
-            update_func(value, g_value, name, '')
-            _G[name] = value
-        elseif type(value) == 'table' then
-            update_table(value, g_value, name, '')
-        end
-    end  -- for
+    visited_sig = {}
+    update_table(env, _G, chunk_name, '')
+    visited_sig = {}
 end  -- hotfix()
 
 function M.hotfix_file(file_path)
     local fp = io.open(file_path)
     if not fp then
-        log_debug("Can not open " .. file_path)
+        M.log_debug("Can not open " .. file_path)
         return
     end
 
@@ -131,7 +119,7 @@ function M.hotfix_file(file_path)
     io.close(fp)
 
     if not file_str then
-        log_debug("Can not read " .. file_path)
+        M.log_debug("Can not read " .. file_path)
         return
     end
     M.hotfix(file_str, file_path)
