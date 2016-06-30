@@ -121,13 +121,19 @@ end  -- hotfix()
 
 function M.hotfix_file(file_path)
     local fp = io.open(file_path)
-    if not fp then return end
+    if not fp then
+        log_debug("Can not open " .. file_path)
+        return
+    end
 
     io.input(file_path)
     local file_str = io.read('*all')
     io.close(fp)
 
-    if not file_str then return end
+    if not file_str then
+        log_debug("Can not read " .. file_path)
+        return
+    end
     M.hotfix(file_str, file_path)
 end  -- hotfix_file()
 
