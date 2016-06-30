@@ -14,6 +14,7 @@ local function update_func(env_f, g_f, name, deep)
     assert('function' == type(env_f))
     assert('function' == type(g_f))
     -- Todo: Check protection?
+    log_debug(deep .. "Update function " .. name)
 
     -- Get upvalues of old function.
     local old_upvalue_map = {}
@@ -67,6 +68,7 @@ function update_table(env_t, g_t, name, deep)
     local signature = tostring(g_t)..tostring(env_t)
     if visited_sig[signature] then return end
     visited_sig[signature] = true
+    log_debug(deep .. "Update table " .. name)
 
     -- Compare env_t and g_t, and update g_t.
     -- Same as _ENV and _G in hotfix()?
@@ -99,19 +101,20 @@ function M.hotfix(chunk, check_name)
     local _ENV = env
     local f, err = load(chunk, check_name, 't', env)
     assert(f, err)
-    local ok, err = pcall(f)
-    assert(ok, err)
+    assert(pcall(f))
 
     -- Compare _ENV and _G, and update _G.
     for name, value in pairs(env) do
         local g_value = _G[name]
         if type(g_value) ~= type(value) then
+            log_debug(string.format("Update %s from %s to %s.",
+                name, type(g_value), type(value)))
             _G[name] = value
         elseif type(value) == 'function' then
-            update_func(value, g_value, name, 'G'..'  ')
+            update_func(value, g_value, name, '')
             _G[name] = value
         elseif type(value) == 'table' then
-            update_table(value, g_value, name, 'G'..'  ')
+            update_table(value, g_value, name, '')
         end
     end  -- for
 end  -- hotfix()
@@ -127,5 +130,11 @@ function M.hotfix_file(file_path)
     if not file_str then return end
     M.hotfix(file_str, file_path)
 end  -- hotfix_file()
+
+-- User can set log functions. Default is no log.
+-- Like: require("hotfix").log_info = function(s) mylog:info(s) end
+function M.log_error(msg_str) end
+function M.log_info(msg_str) end
+function M.log_debug(msg_str) end
 
 return M

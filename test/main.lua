@@ -1,6 +1,9 @@
 package.path = package.path .. ";../?.lua"
 
 local hotfix = require("hotfix")
+hotfix.log_error = print
+hotfix.log_info = print
+hotfix.log_debug = print
 
 local TEST = "test.lua"
 
