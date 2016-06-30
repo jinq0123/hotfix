@@ -19,12 +19,30 @@ local function write_test(s)
     assert(f:close())
 end  -- write_test()
 
+write_test("")
+local test = require("test")
+
+write_test([[
+local a = 1
+function get_a()
+    return a
+end
+]])
+hotfix.hotfix_file(TEST)
+assert(1 == get_a())
+write_test([[
+local a = 2
+function get_a()
+    return a
+end
+]])
+hotfix.hotfix_file(TEST)
+assert(1 == get_a())
+
 write_test([[
 local M = {}
 return M
 ]])
-
-local test = require("test")
 hotfix.hotfix_file(TEST)
 
 write_test([[
@@ -33,7 +51,6 @@ function g_foo() return 123 end
 function M.foo() return 1234 end
 return M
 ]])
-
 hotfix.hotfix_file(TEST)
 assert(123 == g_foo())
 assert(1234 == test.foo())
