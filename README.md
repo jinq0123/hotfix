@@ -3,8 +3,9 @@ Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
 Reference:
 * hotfix by tickbh
-
-  http://www.cnblogs.com/tickbh/articles/5459120.html (In Chinese)
+  <br>https://github.com/tickbh/td_rlua/blob/11523931b0dd271ad4c5e9c532a9d3bae252a264/td_rlua/src/hotfix.rs
+  <br>http://www.cnblogs.com/tickbh/articles/5459120.html (In Chinese)
+  <br>Lua 5.2/5.3.
   
   Can only update global functions.
   
@@ -15,10 +16,8 @@ return M
 ```  
   
 * lua_hotupdate
-
-  https://github.com/asqbtcupid/lua_hotupdate
-  
-  For Lua 5.1.
+  <br>https://github.com/asqbtcupid/lua_hotupdate
+  <br>Lua 5.1.
   
   Can not init new local variables.
   
