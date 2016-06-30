@@ -94,6 +94,8 @@ function update_table(new_table, old_table, name, deep)
 end  -- update_table()
 
 function M.hotfix(chunk, chunk_name)
+    assert('table' == type(_G))
+
     -- Load data to _ENV.
     local env = {}
     setmetatable(env, { __index = _G })
@@ -102,6 +104,7 @@ function M.hotfix(chunk, chunk_name)
     assert(f, err)
     assert(pcall(f))
 
+    -- Update _G.
     visited_sig = {}
     update_table(env, _G, chunk_name, '')
     visited_sig = {}

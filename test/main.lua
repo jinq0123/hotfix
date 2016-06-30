@@ -29,11 +29,13 @@ hotfix.hotfix_file(TEST)
 
 write_test([[
 local M = {}
-function M.foo() return 123 end
+function g_foo() return 123 end
+function M.foo() return 1234 end
 return M
 ]])
 
 hotfix.hotfix_file(TEST)
-assert(123 == test.foo())
+assert(123 == g_foo())
+assert(1234 == test.foo())
 
 assert(os.remove(TEST))
