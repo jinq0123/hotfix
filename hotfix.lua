@@ -125,7 +125,7 @@ function M.hotfix_file(file_path)
     io.close(fp)
 
     if not file_str then return end
-    hotfix(file_str, file_path)
+    M.hotfix(file_str, file_path)
 end  -- hotfix_file()
 
 return M
