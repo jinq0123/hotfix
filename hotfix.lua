@@ -130,11 +130,11 @@ end  -- hotfix_file()
 
 -- Usage: hotfix_module("mymodule.sub_module")
 function M.hotfix_module(module_name)
-    assert("string" == module_name)
+    assert("string" == type(module_name))
     local file_path = assert(package.searchpath(module_name, package.path))
     local fp = assert(io.open(file_path))
     io.input(file_path)
-    local file_str = io.read("*all")
+    local chunk = io.read("*all")
     io.close(fp)
 
     -- Load data to _ENV.
@@ -142,13 +142,12 @@ function M.hotfix_module(module_name)
     assert("table" == type(_G))
     setmetatable(env, { __index = _G })
     local _ENV = env
-    local f, err = load(chunk, chunk_name, "t", env)
-    assert(f, err)
-    package.loaded[module_name] = assert(pcall(f))  -- in env
+    local func = assert(load(chunk, module_name, "t", env))
+    package.loaded[module_name] = assert(pcall(func))  -- set env.package
 
     -- Update _G.
     visited_sig = {}
-    update_table(env, _G, chunk_name, "")
+    update_table(env, _G, module_name, "")
     visited_sig = {}
 end
 
