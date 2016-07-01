@@ -10,6 +10,7 @@ local hotfix = require("hotfix")
 hotfix.log_error = log
 hotfix.log_info = log
 hotfix.log_debug = log
+log("--------------------")
 
 local TEST = "test.lua"
 
@@ -22,6 +23,7 @@ end  -- write_test()
 write_test("")
 local test = require("test")
 
+log("Test keeping upvalue data.")
 write_test([[
 local a = 1
 function get_a()
@@ -39,6 +41,7 @@ end
 hotfix.hotfix_module("test")
 assert(1 == get_a())
 
+log("Test adding functions.")
 write_test([[
 local M = {}
 return M

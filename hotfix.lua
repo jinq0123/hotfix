@@ -47,9 +47,9 @@ local function update_func(new_func, old_func, name, deep)
             if type(old_value) ~= type(value) then
                 debug.setupvalue(new_func, i, old_value)
             elseif type(old_value) == "function" then
-                update_func(value, old_value, name, deep.."  "..name.."  ")
+                update_func(value, old_value, name, deep.."  ")
             elseif type(old_value) == "table" then
-                update_table(value, old_value, name, deep.."  "..name.."  ")
+                update_table(value, old_value, name, deep.."  ")
                 debug.setupvalue(new_func, i, old_value)
             else
                 debug.setupvalue(new_func, i, old_value)
@@ -78,10 +78,10 @@ function update_table(new_table, old_table, name, deep)
         if type(value) ~= type(old_value) then
             old_table[name] = value
         elseif type(value) == "function" then
-            update_func(value, old_value, name, deep.."  "..name.."  ")
+            update_func(value, old_value, name, deep.."  ")
             old_table[name] = value  -- Set new function with old upvalues.
         elseif type(value) == "table" then
-            update_table(value, old_value, name, deep.."  "..name.."  ")
+            update_table(value, old_value, name, deep.."  ")
         end
     end  -- for
 
@@ -89,7 +89,7 @@ function update_table(new_table, old_table, name, deep)
     local old_meta = debug.getmetatable(old_table)
     local new_meta = debug.getmetatable(new_table)
     if type(old_meta) == "table" and type(new_meta) == "table" then
-        update_table(new_meta, old_meta, name.."s Meta", deep.."  "..name.."s Meta".."  " )
+        update_table(new_meta, old_meta, name.."s Meta", deep.."  ")
     end
 end  -- update_table()
 
