@@ -141,6 +141,7 @@ function M.hotfix_file(file_path)
 end  -- hotfix_file()
 
 -- Usage: hotfix_module("mymodule.sub_module")
+-- Returns package.loaded[modname].
 function M.hotfix_module(module_name)
     assert("string" == type(module_name))
     M.log_debug("Hot fix module " .. module_name)
@@ -164,6 +165,7 @@ function M.hotfix_module(module_name)
     visited_sig = {}
     update_table(env, _G, "_G", "")
     visited_sig = {}
+    return package.loaded[modname]
 end
 
 -- User can set log functions. Default is no log.
