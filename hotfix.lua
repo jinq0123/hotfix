@@ -83,7 +83,6 @@ function update_table(new_table, old_table, name, deep)
     visited_sig[signature] = true
 
     -- Compare 2 tables, and update old table.
-    -- Same as _ENV and _G in hotfix()?
     for name, value in pairs(new_table) do
         local old_value = old_table[name]
         if type(value) ~= type(old_value) then
