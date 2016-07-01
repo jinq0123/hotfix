@@ -20,13 +20,17 @@ local function run_test(old, prepare, new, check)
     assert(not prepare or "function" == type(prepare))
     assert("string" == type(new))
     assert(not check or "function" == type(check))
+
+    -- Require old code and prepare.
     write_test_lua(old);
     package.loaded["test"] = nil
     test = require("test")
     if prepare then prepare() end
+
+    -- Hot fix and check.
     write_test_lua(new)
     test = hotfix.hotfix_module("test")
-    if chekc then check() end
+    if check then check() end
 end  -- run_test()
 
 hotfix.log_error = log
