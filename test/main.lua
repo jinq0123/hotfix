@@ -97,4 +97,24 @@ run_test([[
         assert(67890 == tmp.foo())
     end)
 
+log("New upvalue which is a function set global...")
+run_test([[
+        local M = {}
+        function M.foo() return 12345 end
+        return M
+    ]],
+    function() assert(nil == global_test) end,
+    [[
+        local M = {}
+        local function set_global() global_test = 11111 end
+        function M.foo()
+            set_global()
+            return 67890
+        end
+        return M
+    ]],
+    function() assert(11111 == global_test) end)
+
+
+log("Test OK!")
 print("Test OK!")
