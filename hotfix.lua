@@ -106,41 +106,6 @@ function update_table(new_table, old_table, name, deep)
     end
 end  -- update_table()
 
-function M.hotfix(chunk, chunk_name)
-    assert("table" == type(_G))
-
-    -- Load data to _ENV.
-    local env = {}
-    setmetatable(env, { __index = _G })
-    local _ENV = env
-    local f, err = load(chunk, chunk_name, "t", env)
-    assert(f, err)
-    assert(pcall(f))
-
-    -- Update _G.
-    visited_sig = {}
-    update_table(env, _G, chunk_name, "")
-    visited_sig = {}
-end  -- hotfix()
-
-function M.hotfix_file(file_path)
-    local fp = io.open(file_path)
-    if not fp then
-        M.log_debug("Can not open " .. file_path)
-        return
-    end
-
-    io.input(file_path)
-    local file_str = io.read("*all")
-    io.close(fp)
-
-    if not file_str then
-        M.log_debug("Can not read " .. file_path)
-        return
-    end
-    M.hotfix(file_str, file_path)
-end  -- hotfix_file()
-
 -- Usage: hotfix_module("mymodule.sub_module")
 -- Returns package.loaded[module_name].
 function M.hotfix_module(module_name)
