@@ -58,4 +58,4 @@ test = hotfix.hotfix_module("test")
 assert(123 == g_foo())
 assert(1234 == test.foo())
 
-assert(os.remove(TEST))
+print("Test OK!")
