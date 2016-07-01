@@ -1,6 +1,23 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
+hotfix do have side-effect. Global variables maybe changed.
+
+<pre>
+Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
+> math.sin(123)
+-0.45990349068959
+> do
+>> local _ENV = setmetatable({}, {__index = _G})
+>> t = 123
+>> math.sin = print
+>> end
+> t
+nil
+> math.sin(123)
+123
+</pre>
+
 Reference:
 * hotfix by tickbh
   <br>https://github.com/tickbh/td_rlua/blob/11523931b0dd271ad4c5e9c532a9d3bae252a264/td_rlua/src/hotfix.rs

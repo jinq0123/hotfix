@@ -151,12 +151,12 @@ function M.hotfix_module(module_name)
     io.close(fp)
 
     -- Load data to _ENV.
-    local env = {}
+    local env = {package = {loaded = {}}}
     assert("table" == type(_G))
     setmetatable(env, { __index = _G })
     local _ENV = env
     local func = assert(load(chunk, module_name, "t", env))
-    package.loaded[module_name] = assert(pcall(func))  -- set env.package
+    env.package.loaded[module_name] = assert(pcall(func))
 
     -- Update _G.
     visited_sig = {}
