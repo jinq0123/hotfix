@@ -156,7 +156,9 @@ function M.hotfix_module(module_name)
     setmetatable(env, { __index = _G })
     local _ENV = env
     local func = assert(load(chunk, module_name, "t", env))
-    env.package.loaded[module_name] = assert(pcall(func))
+    local ok, result = assert(pcall(func))
+    if nil == result then result = true end  -- result may be false
+    env.package.loaded[module_name] = result  -- like require()
 
     -- Update _G.
     visited_sig = {}
