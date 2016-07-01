@@ -30,7 +30,7 @@ hotfix.log_error = log
 hotfix.log_info = log
 hotfix.log_debug = log
 log("--------------------")
-log("Test keeping upvalue data.")
+log("Test keeping upvalue data...")
 run_test([[
         local a = 1
         function get_a()
@@ -47,7 +47,7 @@ run_test([[
         assert(1 == get_a())
     end)
 
-log("Test adding functions.")
+log("Test adding functions...")
 run_test([[
         local M = {}
         return M
