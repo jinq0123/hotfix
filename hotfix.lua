@@ -28,7 +28,7 @@ local function update_func(new_func, old_func, name, deep)
     assert("function" == type(old_func))
     -- Todo: Check protection
     -- Todo: Check visited_sig
-    M.log_debug(string.format("%sUpdate function upvalues: %s, new(%s), old(%s)",
+    M.log_debug(string.format("%sUpdate function %s()'s upvalues, new(%s), old(%s)",
         deep, name, tostring(new_func), tostring(old_func)))
     deep = deep .. "  "
 
@@ -70,7 +70,7 @@ function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
 
-    M.log_debug(string.format("%sUpdate table: %s, new(%s), old(%s)",
+    M.log_debug(string.format("%sUpdate table '%s', new(%s), old(%s)",
         deep, name, tostring(new_table), tostring(old_table)))
     deep = deep .. "  "
     if protection[new_table] or protection[old_table] then return end
@@ -84,7 +84,6 @@ function update_table(new_table, old_table, name, deep)
     -- Same as _ENV and _G in hotfix()?
     for name, value in pairs(new_table) do
         local old_value = old_table[name]
-        M.log_debug(string.format("%sUpdate %s new(%s) old(%s)", deep, name, tostring(value), tostring(old_value)))
         if type(value) ~= type(old_value) then
             old_table[name] = value
         elseif type(value) == "function" then
