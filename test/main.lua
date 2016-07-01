@@ -109,11 +109,13 @@ run_test([[
         local function set_global() global_test = 11111 end
         function M.foo()
             set_global()
-            return 67890
         end
         return M
     ]],
-    function() assert(11111 == global_test) end)
+    function()
+        assert(nil == test.foo())
+        assert(11111 == global_test)
+    end)
 
 
 log("Test OK!")
