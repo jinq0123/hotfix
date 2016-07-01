@@ -80,13 +80,11 @@ function update_table(new_table, old_table, name, deep)
     if visited_sig[signature] then return end
     visited_sig[signature] = true
 
-    M.log_debug(deep .. "New table:")
-    for k, v in pairs(new_table) do M.log_debug(string.format("%s  %s(%s)", deep, k, tostring(v))) end
-
     -- Compare 2 tables, and update old table.
     -- Same as _ENV and _G in hotfix()?
     for name, value in pairs(new_table) do
         local old_value = old_table[name]
+        M.log_debug(string.format("%sUpdate %s new(%s) old(%s)", deep, name, tostring(value), tostring(old_value)))
         if type(value) ~= type(old_value) then
             old_table[name] = value
         elseif type(value) == "function" then
@@ -141,7 +139,7 @@ function M.hotfix_file(file_path)
 end  -- hotfix_file()
 
 -- Usage: hotfix_module("mymodule.sub_module")
--- Returns package.loaded[modname].
+-- Returns package.loaded[module_name].
 function M.hotfix_module(module_name)
     assert("string" == type(module_name))
     M.log_debug("Hot fix module " .. module_name)
@@ -165,7 +163,7 @@ function M.hotfix_module(module_name)
     visited_sig = {}
     update_table(env, _G, "_G", "")
     visited_sig = {}
-    return package.loaded[modname]
+    return _G.package.loaded[module_name]
 end
 
 -- User can set log functions. Default is no log.
