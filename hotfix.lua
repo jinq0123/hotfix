@@ -28,7 +28,9 @@ local function update_func(new_func, old_func, name, deep)
     assert("function" == type(old_func))
     -- Todo: Check protection
     -- Todo: Check visited_sig
-    M.log_debug(deep .. "Update function " .. name)
+    M.log_debug(string.format("%sUpdate function upvalues: %s, new(%s), old(%s)",
+        deep, name, tostring(new_func), tostring(old_func)))
+    deep = deep .. "  "
 
     -- Get upvalues of old function.
     local old_upvalue_map = {}
@@ -37,6 +39,9 @@ local function update_func(new_func, old_func, name, deep)
         if not name then break end
         old_upvalue_map[name] = value
     end
+
+    M.log_debug(deep .. "Old upvalues:")
+    for name in pairs(old_upvalue_map) do M.log_debug(deep .. "  " .. name) end
 
     -- Update new upvalues with old.
     for i = 1, math.huge do
@@ -47,13 +52,15 @@ local function update_func(new_func, old_func, name, deep)
             if type(old_value) ~= type(value) then
                 debug.setupvalue(new_func, i, old_value)
             elseif type(old_value) == "function" then
-                update_func(value, old_value, name, deep.."  ")
+                update_func(value, old_value, name, deep)
             elseif type(old_value) == "table" then
-                update_table(value, old_value, name, deep.."  ")
+                update_table(value, old_value, name, deep)
                 debug.setupvalue(new_func, i, old_value)
             else
                 debug.setupvalue(new_func, i, old_value)
             end
+        else
+            M.log_debug(string.format("%sIgnore name %s", deep, name))
         end
     end
 end  -- update_func()
@@ -63,13 +70,18 @@ function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
 
+    M.log_debug(string.format("%sUpdate table: %s, new(%s), old(%s)",
+        deep, name, tostring(new_table), tostring(old_table)))
+    deep = deep .. "  "
     if protection[new_table] or protection[old_table] then return end
     if new_table == old_table then return end  -- same address
 
     local signature = tostring(old_table)..tostring(new_table)
     if visited_sig[signature] then return end
     visited_sig[signature] = true
-    M.log_debug(deep .. "Update table " .. name)
+
+    M.log_debug(deep .. "New table:")
+    for k, v in pairs(new_table) do M.log_debug(string.format("%s  %s(%s)", deep, k, tostring(v))) end
 
     -- Compare 2 tables, and update old table.
     -- Same as _ENV and _G in hotfix()?
@@ -78,10 +90,10 @@ function update_table(new_table, old_table, name, deep)
         if type(value) ~= type(old_value) then
             old_table[name] = value
         elseif type(value) == "function" then
-            update_func(value, old_value, name, deep.."  ")
+            update_func(value, old_value, name, deep)
             old_table[name] = value  -- Set new function with old upvalues.
         elseif type(value) == "table" then
-            update_table(value, old_value, name, deep.."  ")
+            update_table(value, old_value, name, deep)
         end
     end  -- for
 
@@ -89,7 +101,7 @@ function update_table(new_table, old_table, name, deep)
     local old_meta = debug.getmetatable(old_table)
     local new_meta = debug.getmetatable(new_table)
     if type(old_meta) == "table" and type(new_meta) == "table" then
-        update_table(new_meta, old_meta, name.."s Meta", deep.."  ")
+        update_table(new_meta, old_meta, name.."'s Meta", deep)
     end
 end  -- update_table()
 
@@ -131,6 +143,7 @@ end  -- hotfix_file()
 -- Usage: hotfix_module("mymodule.sub_module")
 function M.hotfix_module(module_name)
     assert("string" == type(module_name))
+    M.log_debug("Hot fix module " .. module_name)
     local file_path = assert(package.searchpath(module_name, package.path))
     local fp = assert(io.open(file_path))
     io.input(file_path)
@@ -147,7 +160,7 @@ function M.hotfix_module(module_name)
 
     -- Update _G.
     visited_sig = {}
-    update_table(env, _G, module_name, "")
+    update_table(env, _G, "_G", "")
     visited_sig = {}
 end
 
