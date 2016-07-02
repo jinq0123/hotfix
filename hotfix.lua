@@ -19,7 +19,7 @@ local updated_old_tables = {}
 -- Also used to replace functions finally.
 local updated_func_map = {}
 
--- Update new function with upvalues of old function. Keep the old upvalues data.
+-- Update new function with upvalues of old function.
 -- Parameter name and deep are only for log.
 local function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
