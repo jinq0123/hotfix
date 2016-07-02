@@ -86,6 +86,15 @@ run_testX(
         assert(56789 == tmp.f())
     end)
 
+log("Test upvalue self-reference...")
+local code = [[
+        local fun_a, fun_b
+        function fun_a() return fun_b() end
+        function fun_b() return fun_a() end
+        return fun_b
+]]
+run_test(code, nil, code, nil)  -- no dead loop
+
 log("Test function table...")
 run_testX([[
         local M = {}
@@ -124,15 +133,6 @@ run_testX([[
         assert(11111 == global_test)
         global_test = nil
     end)
-
-log("Test upvalue self-reference...")
-local code = [[
-        local fun_b
-        function fun_a() return fun_b() end
-        function fun_b() return fun_a() end
-        return fun_b
-]]
-run_test(code, nil, code, nil)  -- dead loop?
 
 log("Test OK!")
 print("Test OK!")
