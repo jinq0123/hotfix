@@ -8,29 +8,38 @@ local M = {}
 local update_table
 local update_func
 
--- Visited signatures to prevent dead loop.
-local visited_sig = {}  -- TODO delete
-
--- Record undated old tables to prevent self-reference dead loop.
-local updated_old_tables = {}
+-- Visited signature set to prevent self-reference dead loop.
+local visited_sig = {}
 
 -- Map old function to new functions.
--- To prevent self-reference dead loop.
--- Also used to replace functions finally.
+-- Used to replace functions finally.
 local updated_func_map = {}
+
+-- Check if function or table has visited. Return true if visited.
+local function check_visited(new_obj, old_obj, name, deep)
+    local signature = string.format("new(%s) old(%s)",
+        tostring(new_obj), tostring(old_obj))
+    M.log_debug(string.format("%sUpdate %s: %s", deep, name, signature))
+
+    if new_obj == old_obj then
+        M.log_debug(deep .. "  Same")
+        return true
+    end
+    if visited_sig[signature] then
+        M.log_debug(deep .. "  Already visited")
+        return true
+    end
+    visited_sig[signature] = true
+    return false
+end
 
 -- Update new function with upvalues of old function.
 -- Parameter name and deep are only for log.
 local function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
     assert("function" == type(old_func))
-
-    M.log_debug(string.format("%sUpdate function %s(): new(%s), old(%s)",
-        deep, name, tostring(new_func), tostring(old_func)))
+    if check_visited(new_func, old_func, name, deep) then return end
     deep = deep .. "  "
-
-    if old_func == new_func then return end
-    if updated_func_map[old_func] then return end
     updated_func_map[old_func] = new_func
 
     -- Get upvalues of old function.
@@ -72,15 +81,8 @@ end  -- update_func()
 function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
-
-    M.log_debug(string.format("%sUpdate table '%s': new(%s), old(%s)",
-        deep, name, tostring(new_table), tostring(old_table)))
+    if check_visited(new_table, old_table, name, deep) then return end
     deep = deep .. "  "
-    if new_table == old_table then return end  -- same address
-
-    local signature = tostring(old_table)..tostring(new_table)
-    if visited_sig[signature] then return end
-    visited_sig[signature] = true
 
     -- Compare 2 tables, and update old table.
     for name, value in pairs(new_table) do
@@ -129,7 +131,9 @@ function M.hotfix_module(module_name)
 
     -- Update _G.
     visited_sig = {}
+    updated_func_map = {}
     update_table(env, _G, "_G", "")
+    updated_func_map = {}
     visited_sig = {}
     return _G.package.loaded[module_name]
 end
