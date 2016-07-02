@@ -15,6 +15,9 @@ local visited_sig = {}
 -- Used to replace functions finally.
 local updated_func_map = {}
 
+-- Objects that have replaced functions.
+local replaced_obj = {}
+
 -- Check if function or table has visited. Return true if visited.
 local function check_visited(new_obj, old_obj, name, deep)
     local signature = string.format("new(%s) old(%s)",
@@ -78,13 +81,14 @@ local function update_func(new_func, old_func, name, deep)
 end  -- update_func()
 
 -- Compare 2 tables and update old table. Keep the old data.
-function update_table(new_table, old_table, name, deep)
+local function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
     if check_visited(new_table, old_table, name, deep) then return end
     deep = deep .. "  "
 
     -- Compare 2 tables, and update old table.
+    -- Todo: name may be func or table! update it!
     for name, value in pairs(new_table) do
         local old_value = old_table[name]
         if type(value) ~= type(old_value) then
@@ -107,6 +111,47 @@ function update_table(new_table, old_table, name, deep)
         update_table(new_meta, old_meta, name.."'s Meta", deep)
     end
 end  -- update_table()
+
+-- Replace all updated functions.
+-- Record all visited objects.
+local function replace_functions(obj)
+    local obj_type = type(obj)
+    if "function" ~= obj_type and "table" ~= obj_type then return end
+    if replaced_obj[obj] then return end
+    replaced_obj[obj] = true
+
+    if "function" == obj_type then
+        for i = 1, math.huge do
+            local name, value = debug.getupvalue(obj, i)
+            if not name then return end
+            local new_func = updated_func_map[value]
+            if new_func then
+                assert("function" == type(value))
+                debug.set_upvalue(obj, i, new_func)
+            else
+                replace_functions(value)
+            end
+        end  -- for
+        assert(false, "Can not reach here!")
+    end  -- if "function"
+
+    -- for table
+    replace_functions(debug.getmetatable(obj))
+    local new = {}  -- to assign new fields
+    for k, v in pairs(obj) do
+        local new_k = updated_func_map[k]
+        local new_v = updated_func_map[v]
+        if new_k then
+            obj[k] = nil  -- delete field
+            new[new_k] = new_v or v
+        else
+            obj[k] = new_v or v
+            replace_functions(k)
+        end
+        if not new_v then replace_functions(v) end
+    end  -- for k, v
+    for k, v in pairs(new) do obj[k] = v end
+end  -- replace_functions(obj)
 
 -- Usage: hotfix_module("mymodule.sub_module")
 -- Returns package.loaded[module_name].
@@ -133,6 +178,12 @@ function M.hotfix_module(module_name)
     visited_sig = {}
     updated_func_map = {}
     update_table(env, _G, "_G", "")
+
+    replaced_obj = {}
+    replace_functions(_G)
+    replace_functions(debug.getregistry())
+    replaced_obj = {}
+
     updated_func_map = {}
     visited_sig = {}
     return _G.package.loaded[module_name]

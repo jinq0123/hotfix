@@ -77,7 +77,7 @@ run_test([[
     end)
 
 log("Hot fix function module...")  -- Module returns a function.
-run_testX(
+run_test(
     "return function() return 12345 end",
     function() tmp.f = test end,
     "return function() return 56789 end",
@@ -96,7 +96,7 @@ local code = [[
 run_test(code, nil, code, nil)  -- no dead loop
 
 log("Test function table...")
-run_testX([[
+run_test([[
         local M = {}
         function M.foo() return 12345 end
         return M
@@ -113,7 +113,7 @@ run_testX([[
     end)
 
 log("New upvalue which is a function set global...")
-run_testX([[
+run_test([[
         local M = {}
         function M.foo() return 12345 end
         return M
