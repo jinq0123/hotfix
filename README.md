@@ -1,7 +1,8 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
-hotfix do have side-effect. Global variables maybe changed.
+hotfix do have side-effect. Global variables may be changed.
+In the following example, t is OK but math.sin is changed.
 
 <pre>
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
@@ -45,5 +46,16 @@ function M.foo()
 +    log.info("test")
 end
 return M
-```  
-  
+```
+
+How to run test
+------------------
+Run main.lua in test dir.
+main.lua will write a test.lua file and hotfix it.
+main.lua will write log to log.txt.
+<pre>
+D:\Jinq\Git\hotfix\test>..\..\..\tools\lua-5.3.2_Win64_bin\lua53
+Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
+> dofile("main.lua")
+main.lua:80: assertion failed!
+</pre>

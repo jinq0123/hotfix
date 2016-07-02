@@ -11,22 +11,11 @@ local update_func
 -- Visited signatures to prevent dead loop.
 local visited_sig = {}
 
--- Todo: only need table?
-local protection = {
-    setmetatable = true,
-    pairs = true,
-    ipairs = true,
-    next = true,
-    require = true,
-    _ENV = true,
-}
-
 -- Update new function with upvalues of old function. Keep the old upvalues data.
 -- Parameter name and deep are only for log.
 local function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
     assert("function" == type(old_func))
-    -- Todo: Check protection
     -- Todo: Check visited_sig
     M.log_debug(string.format("%sUpdate function %s(): new(%s), old(%s)",
         deep, name, tostring(new_func), tostring(old_func)))
@@ -75,7 +64,6 @@ function update_table(new_table, old_table, name, deep)
     M.log_debug(string.format("%sUpdate table '%s': new(%s), old(%s)",
         deep, name, tostring(new_table), tostring(old_table)))
     deep = deep .. "  "
-    if protection[new_table] or protection[old_table] then return end
     if new_table == old_table then return end  -- same address
 
     local signature = tostring(old_table)..tostring(new_table)
@@ -95,6 +83,7 @@ function update_table(new_table, old_table, name, deep)
         elseif type(value) == "table" then
             update_table(value, old_value, name, deep)
         end
+        -- Todo: Delete keys that are old functions.
     end  -- for
 
     -- Update metatable.
