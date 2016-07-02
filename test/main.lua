@@ -15,6 +15,10 @@ local function write_test_lua(s)
     assert(f:close())
 end  -- write_test_lua()
 
+local function run_testX(old, prepare, new, check)
+    log("Skip.")
+end
+
 local function run_test(old, prepare, new, check)
     assert("string" == type(old))
     assert(not prepare or "function" == type(prepare))
@@ -53,6 +57,7 @@ run_test([[
     ]],
     function()
         assert(1 == get_a())
+        get_a = nil
     end)
 
 log("Test adding functions...")
@@ -68,10 +73,11 @@ run_test([[
     function()
         assert(123 == g_foo())
         assert(1234 == test.foo())
+        g_foo = nil
     end)
 
 log("Hot fix function module...")  -- Module returns a function.
-run_test(
+run_testX(
     "return function() return 12345 end",
     function() tmp.f = test end,
     "return function() return 56789 end",
@@ -81,7 +87,7 @@ run_test(
     end)
 
 log("Test function table...")
-run_test([[
+run_testX([[
         local M = {}
         function M.foo() return 12345 end
         return M
@@ -98,7 +104,7 @@ run_test([[
     end)
 
 log("New upvalue which is a function set global...")
-run_test([[
+run_testX([[
         local M = {}
         function M.foo() return 12345 end
         return M
@@ -114,9 +120,19 @@ run_test([[
     ]],
     function()
         assert(nil == test.foo())
+        -- Upvalue _ENV of set_global() should replaced from env to real _ENV.
         assert(11111 == global_test)
+        global_test = nil
     end)
 
+log("Test upvalue self-reference...")
+local code = [[
+        local fun_b
+        function fun_a() return fun_b() end
+        function fun_b() return fun_a() end
+        return fun_b
+]]
+run_test(code, nil, code, nil)  -- dead loop?
 
 log("Test OK!")
 print("Test OK!")

@@ -9,17 +9,29 @@ local update_table
 local update_func
 
 -- Visited signatures to prevent dead loop.
-local visited_sig = {}
+local visited_sig = {}  -- TODO delete
+
+-- Record undated old tables to prevent self-reference dead loop.
+local updated_old_tables = {}
+
+-- Map old function to new functions.
+-- To prevent self-reference dead loop.
+-- Also used to replace functions finally.
+local updated_func_map = {}
 
 -- Update new function with upvalues of old function. Keep the old upvalues data.
 -- Parameter name and deep are only for log.
 local function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
     assert("function" == type(old_func))
-    -- Todo: Check visited_sig
+
     M.log_debug(string.format("%sUpdate function %s(): new(%s), old(%s)",
         deep, name, tostring(new_func), tostring(old_func)))
     deep = deep .. "  "
+
+    if old_func == new_func then return end
+    if updated_func_map[old_func] then return end
+    updated_func_map[old_func] = new_func
 
     -- Get upvalues of old function.
     local old_upvalue_map = {}
