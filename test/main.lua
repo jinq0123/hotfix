@@ -1,4 +1,7 @@
 package.path = "../?.lua;" .. package.path
+
+local M = {}
+
 local hotfix = require("hotfix")
 local test  -- = require("test")
 local tmp = {}  -- to store temp data
@@ -36,6 +39,8 @@ local function run_test(old, prepare, new, check)
     test = hotfix.hotfix_module("test")
     if check then check() end
 end  -- run_test()
+
+function M.run()
 
 hotfix.log_error = log
 hotfix.log_info = log
@@ -136,3 +141,8 @@ run_test([[
 
 log("Test OK!")
 print("Test OK!")
+
+end  -- run()
+
+return M
+

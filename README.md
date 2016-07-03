@@ -1,16 +1,21 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
-Local variables to functions are not updated.
+Local variable which is not referenced by _G is not updated.
 ```
 -- test.lua: return { function func() return "old" end }
-local test = require("test")
-local func = test.func
+local test = require("test")  -- referenced by _G.package.loaded["test"]
+local func = test.func        -- is not upvalue or is referenced by _G
 -- test.lua: return { function func() return "new" end }
 require("hotfix").hotfix_module("test")
 test.func()  -- "new"  
 func()       -- "old"
 ```
+
+Todo: Replace functions of local variables in all threads using:
+
+    debug.getlocal ([thread,] f, local)
+    debug.setlocal ([thread,] level, local, value)
 
 hotfix do have side-effect. Global variables may be changed.
 In the following example, t is OK but math.sin is changed.
@@ -67,6 +72,6 @@ main.lua will write log to log.txt.
 <pre>
 D:\Jinq\Git\hotfix\test>..\..\..\tools\lua-5.3.2_Win64_bin\lua53
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
-> dofile("main.lua")
+> require("main").run()
 main.lua:80: assertion failed!
 </pre>
