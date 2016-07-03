@@ -127,7 +127,7 @@ local function replace_functions(obj)
             local new_func = updated_func_map[value]
             if new_func then
                 assert("function" == type(value))
-                debug.set_upvalue(obj, i, new_func)
+                debug.setupvalue(obj, i, new_func)
             else
                 replace_functions(value)
             end
