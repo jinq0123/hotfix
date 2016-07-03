@@ -1,6 +1,17 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
+Local variables to functions are not updated.
+```
+-- test.lua: return { function func() return "old" end }
+local test = require("test")
+local func = test.func
+-- test.lua: return { function func() return "new" end }
+require("hotfix").hotfix_module("test")
+test.func()  -- "new"  
+func()       -- "old"
+```
+
 hotfix do have side-effect. Global variables may be changed.
 In the following example, t is OK but math.sin is changed.
 
