@@ -18,6 +18,11 @@ local updated_func_map = {}
 -- Objects that have replaced functions.
 local replaced_obj = {}
 
+-- Do not update and replace protected objects.
+local protected = {
+    M = true,
+}
+
 -- Check if function or table has visited. Return true if visited.
 local function check_visited(new_obj, old_obj, name, deep)
     local signature = string.format("new(%s) old(%s)",
@@ -115,6 +120,7 @@ end  -- update_table()
 -- Replace all updated functions.
 -- Record all visited objects.
 local function replace_functions(obj)
+    if protected[obj] then return end
     local obj_type = type(obj)
     if "function" ~= obj_type and "table" ~= obj_type then return end
     if replaced_obj[obj] then return end
