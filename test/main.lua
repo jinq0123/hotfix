@@ -148,7 +148,6 @@ run_test([[
     ]],
     function()
         assert(nil == test.foo())
-        -- Upvalue _ENV of set_global() should replaced from env to real _ENV.
         assert(11111 == global_test)
         global_test = nil
     end)
