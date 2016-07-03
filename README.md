@@ -75,3 +75,21 @@ Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
 > require("main").run()
 main.lua:80: assertion failed!
 </pre>
+
+Unexpected update
+-------------------
+log function is changed from print() to an empty function.
+The hotfix will replace all print() to an empty function which is totally unexpected.
+```
+local M = {}
+local log = print
+function M.foo() log("Old") end
+return M
+```
+```
+local M = {}
+local log = function() end
+function M.foo() log("Old") end
+return M
+```
+Todo: replace module returned table or function but do not replace global.
