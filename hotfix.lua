@@ -53,7 +53,7 @@ end
 local function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
     assert("function" == type(old_func))
-    -- No need to protect function update.
+    if protected[old_func] then return end
     if check_visited(new_func, old_func, name, deep) then return end
     deep = deep .. "  "
     updated_func_map[old_func] = new_func
