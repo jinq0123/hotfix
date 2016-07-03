@@ -23,6 +23,11 @@ local protected = {}
 
 local function init_protected()
     protected[M] = true
+    protected[M.hotfix_module] = true
+    protected[M.log_error] = true
+    protected[M.log_info] = true
+    protected[M.log_debug] = true
+    protected[M.add_protect] = true
 end  -- init_protected()
 
 -- Check if function or table has visited. Return true if visited.
@@ -48,6 +53,7 @@ end
 local function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
     assert("function" == type(old_func))
+    -- No need to protect function update.
     if check_visited(new_func, old_func, name, deep) then return end
     deep = deep .. "  "
     updated_func_map[old_func] = new_func
@@ -91,6 +97,7 @@ end  -- update_func()
 local function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
+    if protected[old_table] then return end
     if check_visited(new_table, old_table, name, deep) then return end
     deep = deep .. "  "
 
@@ -204,5 +211,13 @@ end
 function M.log_error(msg_str) end
 function M.log_info(msg_str) end
 function M.log_debug(msg_str) end
+
+-- Add objects to protect.
+-- Example: add_protect({table, math, print})
+function M.add_protect(object_array)
+    for _, obj in pairs(object) do
+        protected[obj] = true
+    end
+end  -- add_protect()
 
 return M
