@@ -139,7 +139,7 @@ local function update_loaded_module(new_obj, module_name)
             return
         end
         if "function" == new_type then
-            update_function(new_obj, old_obj, module_name, "")
+            update_func(new_obj, old_obj, module_name, "")
             return;
         end
     end  -- if new_type == old_type
