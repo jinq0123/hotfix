@@ -1,6 +1,22 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
+hotfix_module(module_name)
+---------------------------
+hotfix_module() uses package.searchpath(module_name, package.path)
+ to search the path of module.
+The module is loaded and the returned value is updated to
+ package.loaded[module_name].
+If the returned value is nil, then package.loaded[module_name]
+ is assigned to true.
+hotfix_module() returns the final value of package.loaded[module_name].
+
+Functons are updated to new ones but old upvalues are kept.
+Old tables are kept and new fields are inserted.
+All references to old functions are replaced to new ones.
+
+----
+
 Local variable which is not referenced by _G is not updated.
 ```
 -- test.lua: return { function func() return "old" end }
