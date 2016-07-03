@@ -8,8 +8,8 @@ local M = {}
 local update_table
 local update_func
 
--- Visited signature set to prevent self-reference dead loop.
-local visited_sig = {}
+-- Updated signature set to prevent self-reference dead loop.
+local updated_sig = {}
 
 -- Map old function to new functions.
 -- Used to replace functions finally.
@@ -30,8 +30,8 @@ local function init_protected()
     protected[M.add_protect] = true
 end  -- init_protected()
 
--- Check if function or table has visited. Return true if visited.
-local function check_visited(new_obj, old_obj, name, deep)
+-- Check if function or table has been updated. Return true if updated.
+local function check_updated(new_obj, old_obj, name, deep)
     local signature = string.format("new(%s) old(%s)",
         tostring(new_obj), tostring(old_obj))
     M.log_debug(string.format("%sUpdate %s: %s", deep, name, signature))
@@ -40,11 +40,11 @@ local function check_visited(new_obj, old_obj, name, deep)
         M.log_debug(deep .. "  Same")
         return true
     end
-    if visited_sig[signature] then
-        M.log_debug(deep .. "  Already visited")
+    if updated_sig[signature] then
+        M.log_debug(deep .. "  Already updated")
         return true
     end
-    visited_sig[signature] = true
+    updated_sig[signature] = true
     return false
 end
 
@@ -54,7 +54,7 @@ local function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
     assert("function" == type(old_func))
     if protected[old_func] then return end
-    if check_visited(new_func, old_func, name, deep) then return end
+    if check_updated(new_func, old_func, name, deep) then return end
     deep = deep .. "  "
     updated_func_map[old_func] = new_func
 
@@ -98,7 +98,7 @@ local function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
     if protected[old_table] then return end
-    if check_visited(new_table, old_table, name, deep) then return end
+    if check_updated(new_table, old_table, name, deep) then return end
     deep = deep .. "  "
 
     -- Compare 2 tables, and update old table.
@@ -192,7 +192,7 @@ function M.hotfix_module(module_name)
     env.package.loaded[module_name] = result  -- like require()
 
     -- Update _G.
-    visited_sig = {}
+    updated_sig = {}
     updated_func_map = {}
     update_table(env, _G, "_G", "")
 
@@ -202,7 +202,7 @@ function M.hotfix_module(module_name)
     replaced_obj = {}
 
     updated_func_map = {}
-    visited_sig = {}
+    updated_sig = {}
     return _G.package.loaded[module_name]
 end
 
