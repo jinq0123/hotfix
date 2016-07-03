@@ -34,7 +34,17 @@ Todo: Replace functions of local variables in all threads using:
     debug.getlocal ([thread,] f, local)
     debug.setlocal ([thread,] level, local, value)
 
-hotfix do have side-effect. Global variables may be changed.
+Why not protect the global variables
+-------------------------------------
+We can protect the glocal variables on loading.
+
+[1] uses a read only ENV to load.
+    local env = {}
+    setmetatable(env, { __index = _G })
+    load(chunk, check_name, 't', env)
+
+But it can not stop indirect write.
+Global variables may be changed.
 In the following example, t is OK but math.sin is changed.
 
 <pre>
@@ -52,8 +62,46 @@ nil
 123
 </pre>
 
-Reference:
-* hotfix by tickbh
+[2] uses a fake ENV to load and ignores all operations.
+In this case, we can not init new local variables.
+```
+local M = {}
++ local log = require("log")  -- Can not require!
+function M.foo()
++    log.info("test")
+end
+return M
+```
+
+Another problem is the new function's _ENV is not the real ENV.
+Following test will fail because set_global() has a protected ENV.
+```
+log("New upvalue which is a function set global...")
+run_test([[
+        local M = {}
+        function M.foo() return 12345 end
+        return M
+    ]],
+    function() assert(nil == global_test) end,
+    [[
+        local M = {}
+        local function set_global() global_test = 11111 end
+        function M.foo()
+            set_global()
+        end
+        return M
+    ]],
+    function()
+        assert(nil == test.foo())
+        -- Upvalue _ENV of set_global() should replaced from env to real _ENV.
+        assert(11111 == global_test)
+        global_test = nil
+    end)
+```
+
+Reference
+---------
+* [1] hotfix by tickbh
   <br>https://github.com/tickbh/td_rlua/blob/11523931b0dd271ad4c5e9c532a9d3bae252a264/td_rlua/src/hotfix.rs
   <br>http://www.cnblogs.com/tickbh/articles/5459120.html (In Chinese)
   <br>Lua 5.2/5.3.
@@ -66,20 +114,11 @@ local M = {}
 return M
 ```  
   
-* lua_hotupdate
+* [2] lua_hotupdate
   <br>https://github.com/asqbtcupid/lua_hotupdate
   <br>Lua 5.1.
-  
-  Can not init new local variables.
-  
-```
-local M = {}
-+ local log = require("log")  -- Can not require!
-function M.foo()
-+    log.info("test")
-end
-return M
-```
+
+Using a fake ENV, the module's init statements result in noop.
 
 How to run test
 ------------------
