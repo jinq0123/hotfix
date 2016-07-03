@@ -19,9 +19,11 @@ local updated_func_map = {}
 local replaced_obj = {}
 
 -- Do not update and replace protected objects.
-local protected = {
-    M = true,
-}
+local protected = {}
+
+local function init_protected()
+    protected[M] = true
+end  -- init_protected()
 
 -- Check if function or table has visited. Return true if visited.
 local function check_visited(new_obj, old_obj, name, deep)
@@ -125,6 +127,7 @@ local function replace_functions(obj)
     if "function" ~= obj_type and "table" ~= obj_type then return end
     if replaced_obj[obj] then return end
     replaced_obj[obj] = true
+    assert(obj ~= updated_func_map)
 
     if "function" == obj_type then
         for i = 1, math.huge do
@@ -164,6 +167,7 @@ end  -- replace_functions(obj)
 function M.hotfix_module(module_name)
     assert("string" == type(module_name))
     M.log_debug("Hot fix module: " .. module_name)
+    init_protected()
     local file_path = assert(package.searchpath(module_name, package.path))
     local fp = assert(io.open(file_path))
     io.input(file_path)
