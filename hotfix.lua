@@ -126,6 +126,28 @@ local function update_table(new_table, old_table, name, deep)
     end
 end  -- update_table()
 
+-- Update new loaded object with package.loaded[module_name].
+local function update_loaded_module(new_obj, module_name)
+    assert(nil ~= new_obj)
+    assert("string" == type(module_name))
+    local old_obj = package.loaded[module_name]
+    local new_type = type(new_obj)
+    local old_type = type(old_obj)
+    if new_type == old_type then
+        if "table" == new_type then
+            update_table(new_obj, old_obj, module_name, "")
+            return
+        end
+        if "function" == new_type then
+            update_function(new_obj, old_obj, module_name, "")
+            return;
+        end
+    end  -- if new_type == old_type
+    M.log_debug(string.format("Directly replace module: old(%s) -> new(%s)",
+        tostring(old_obj), tostring(new_obj)))
+    package.loaded[module_name] = new_obj
+end  -- update_loaded_module
+
 -- Replace all updated functions.
 -- Record all visited objects.
 local function replace_functions(obj)
@@ -175,35 +197,34 @@ function M.hotfix_module(module_name)
     assert("string" == type(module_name))
     M.log_debug("Hot fix module: " .. module_name)
     init_protected()
+
     local file_path = assert(package.searchpath(module_name, package.path))
     local fp = assert(io.open(file_path))
     io.input(file_path)
     local chunk = io.read("*all")
     io.close(fp)
 
-    -- Load data to _ENV.
-    local env = {package = {loaded = {}}}
-    assert("table" == type(_G))
-    setmetatable(env, { __index = _G })
-    local _ENV = env
-    local func = assert(load(chunk, module_name, "t", env))
-    local ok, result = assert(pcall(func))
-    if nil == result then result = true end  -- result may be false
-    env.package.loaded[module_name] = result  -- like require()
+    -- Load chunk.
+    local func = assert(load(chunk))
+    local ok, obj = assert(pcall(func))
+    if nil == obj then obj = true end  -- obj may be false
 
-    -- Update _G.
+    -- Update package.loaded[module_name].
     updated_sig = {}
     updated_func_map = {}
-    update_table(env, _G, "_G", "")
+    do
+        update_loaded_module(obj, module_name)
 
-    replaced_obj = {}
-    replace_functions(_G)
-    replace_functions(debug.getregistry())
-    replaced_obj = {}
-
+        if next(updated_func_map) then
+            replaced_obj = {}
+            replace_functions(_G)
+            replace_functions(debug.getregistry())
+            replaced_obj = {}
+        end  -- if
+    end  -- do
     updated_func_map = {}
     updated_sig = {}
-    return _G.package.loaded[module_name]
+    return package.loaded[module_name]
 end
 
 -- User can set log functions. Default is no log.

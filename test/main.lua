@@ -48,21 +48,35 @@ hotfix.log_debug = log
 
 log("--------------------")
 
-log("Test keeping upvalue data...")
+log("Test changing global function...")
 run_test([[
-        local a = 1
-        function get_a()
+        local a = "old"
+        function g_get_a()
             return a
         end
     ]], nil, [[
-        local a = 2
-        function get_a()
+        local a = "new"
+        function g_get_a()
             return a
         end
     ]],
     function()
-        assert(1 == get_a())
-        get_a = nil
+        -- Global function is reset directly.
+        assert("new" == g_get_a())
+        g_get_a = nil
+    end)
+
+log("Test keeping upvalue data...")
+run_test([[
+        local a = "old"
+        return function() return a end
+    ]], nil, [[
+        local a = "new"
+        return function() return a .. "_x" end
+    ]],
+    function()
+        -- Old upvalue is kept.
+        assert("old_x" == test())
     end)
 
 log("Test adding functions...")
