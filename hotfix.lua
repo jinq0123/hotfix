@@ -21,15 +21,6 @@ local replaced_obj = {}
 -- Do not update and replace protected objects.
 local protected = {}
 
-local function init_protected()
-    protected[M] = true
-    protected[M.hotfix_module] = true
-    protected[M.log_error] = true
-    protected[M.log_info] = true
-    protected[M.log_debug] = true
-    protected[M.add_protect] = true
-end  -- init_protected()
-
 -- Check if function or table has been updated. Return true if updated.
 local function check_updated(new_obj, old_obj, name, deep)
     local signature = string.format("new(%s) old(%s)",
@@ -191,12 +182,25 @@ local function replace_functions(obj)
     for k, v in pairs(new) do obj[k] = v end
 end  -- replace_functions(obj)
 
+-- To protect self.
+local function add_self_to_protect()
+    M.add_protect{
+        M,
+        M.hotfix_module,
+        M.log_error,
+        M.log_info,
+        M.log_debug,
+        M.add_protect,
+        M.remove_protect,
+    }
+end  -- add_self_to_protect
+
 -- Usage: hotfix_module("mymodule.sub_module")
 -- Returns package.loaded[module_name].
 function M.hotfix_module(module_name)
     assert("string" == type(module_name))
     M.log_debug("Hot fix module: " .. module_name)
-    init_protected()
+    add_self_to_protect()
 
     local file_path = assert(package.searchpath(module_name, package.path))
     local fp = assert(io.open(file_path))
@@ -236,9 +240,16 @@ function M.log_debug(msg_str) end
 -- Add objects to protect.
 -- Example: add_protect({table, math, print})
 function M.add_protect(object_array)
-    for _, obj in pairs(object) do
+    for _, obj in pairs(object_array) do
         protected[obj] = true
     end
 end  -- add_protect()
+
+-- Remove objects in protected set.
+function M.remove_protect(object_array)
+    for _, obj in pairs(object_array) do
+        protected[obj] = nil
+    end
+end  -- remove_protect()
 
 return M
