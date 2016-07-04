@@ -94,20 +94,18 @@ local function update_table(new_table, old_table, name, deep)
     deep = deep .. "  "
 
     -- Compare 2 tables, and update old table.
-    -- Todo: name may be func or table! update it!
-    for name, value in pairs(new_table) do
-        local old_value = old_table[name]
+    for key, value in pairs(new_table) do
+        local old_value = old_table[key]
         local type_value = type(value)
         if type_value ~= type(old_value) then
-            old_table[name] = value
-            M.log_debug(string.format("%sUpdate field '%s': (%s) -> (%s)",
-                deep, name, tostring(old_value), tostring(value)))
+            old_table[key] = value
+            M.log_debug(string.format("%sUpdate field %s: (%s) -> (%s)",
+                deep, key, tostring(old_value), tostring(value)))
         elseif type_value == "function" then
-            update_func(value, old_value, name, deep)
+            update_func(value, old_value, key, deep)
         elseif type_value == "table" then
-            update_table(value, old_value, name, deep)
+            update_table(value, old_value, key, deep)
         end
-        -- Todo: Delete keys that are old functions.
     end  -- for
 
     -- Update metatable.
