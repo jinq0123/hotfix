@@ -41,7 +41,7 @@ end
 
 -- Update new function with upvalues of old function.
 -- Parameter name and deep are only for log.
-local function update_func(new_func, old_func, name, deep)
+function update_func(new_func, old_func, name, deep)
     assert("function" == type(new_func))
     assert("function" == type(old_func))
     if protected[old_func] then return end
@@ -86,7 +86,7 @@ local function update_func(new_func, old_func, name, deep)
 end  -- update_func()
 
 -- Compare 2 tables and update old table. Keep the old data.
-local function update_table(new_table, old_table, name, deep)
+function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
     if protected[old_table] then return end
