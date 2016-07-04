@@ -28,7 +28,7 @@ Local variable which is not referenced by _G is not updated.
 ```
 -- test.lua: return { function func() return "old" end }
 local test = require("test")  -- referenced by _G.package.loaded["test"]
-local func = test.func        -- is not upvalue or is referenced by _G
+local func = test.func        -- is not upvalue nor is referenced by _G
 -- test.lua: return { function func() return "new" end }
 require("hotfix").hotfix_module("test")
 test.func()  -- "new"  
@@ -99,8 +99,6 @@ run_test([[
     ]],
     function()
         assert(nil == test.foo())
-        -- Upvalue _ENV of set_global() is protected
-        -- which should be replaced to the real _ENV.
         assert(11111 == global_test)  -- FAIL!
         global_test = nil
     end)
