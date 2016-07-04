@@ -1,6 +1,13 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
+Usage
+-----
+```
+local hotfix = require("hotfix")
+hotfix.hotfix_module("mymodule.sub_module")
+```
+
 hotfix_module(module_name)
 ---------------------------
 hotfix_module() uses package.searchpath(module_name, package.path)
