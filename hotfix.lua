@@ -246,6 +246,7 @@ function M.add_protect(object_array)
 end  -- add_protect()
 
 -- Remove objects in protected set.
+-- Example: remove_protect({table, math, print})
 function M.remove_protect(object_array)
     for _, obj in pairs(object_array) do
         protected[obj] = nil
