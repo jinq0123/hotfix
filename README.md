@@ -16,7 +16,6 @@ Old tables are kept and new fields are inserted.
 All references to old functions are replaced to new ones.
 
 The module may change any global variables if it want to.
-----
 
 Local variable which is not referenced by _G is not updated.
 ```
@@ -118,7 +117,7 @@ return M
   <br>https://github.com/asqbtcupid/lua_hotupdate
   <br>Lua 5.1.
 
-Using a fake ENV, the module's init statements result in noop.
+  Using a fake ENV, the module's init statements result in noop.
 
 How to run test
 ------------------
