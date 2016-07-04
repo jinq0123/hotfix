@@ -67,7 +67,7 @@ local function update_func(new_func, old_func, name, deep)
     end
 
     local function log_dbg(name, from, to)
-        M.log_debug(string.format("%ssetupvalue '%s': (%s) -> (%s)",
+        M.log_debug(string.format("%ssetupvalue %s: (%s) -> (%s)",
             deep, name, tostring(from), tostring(to)))
     end
 
