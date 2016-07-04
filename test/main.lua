@@ -152,6 +152,28 @@ run_test([[
         global_test = nil
     end)
 
+log("Test table key...")
+run_test([[
+        local M = {}
+        M[print] = function() return "old" end
+        M[M] = "old"
+        return M
+    ]],
+    function() assert(nil == global_test) end,
+    [[
+        local M = {}
+        M[print] = function() return "new" end
+        M[M] = "new"
+        return M
+    ]],
+    function()
+        assert("new" == test[print]())
+        assert("old" == test[test])
+    end)
+
+-- Todo: Test metatable update
+-- Todo: Test registry update
+
 log("Test OK!")
 print("Test OK!")
 
