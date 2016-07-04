@@ -99,8 +99,9 @@ run_test([[
     ]],
     function()
         assert(nil == test.foo())
-        -- Upvalue _ENV of set_global() should replaced from env to real _ENV.
-        assert(11111 == global_test)
+        -- Upvalue _ENV of set_global() is protected
+        -- which should be replaced to the real _ENV.
+        assert(11111 == global_test)  -- FAIL!
         global_test = nil
     end)
 ```
