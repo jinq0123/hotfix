@@ -98,27 +98,6 @@ run_test([[
     end)
 ```
 
-Reference
----------
-* [1] hotfix by tickbh
-  <br>https://github.com/tickbh/td_rlua/blob/11523931b0dd271ad4c5e9c532a9d3bae252a264/td_rlua/src/hotfix.rs
-  <br>http://www.cnblogs.com/tickbh/articles/5459120.html (In Chinese)
-  <br>Lua 5.2/5.3.
-  
-  Can only update global functions.
-  
-```
-local M = {}
-+ function M.foo() end  -- Can not add M.foo().
-return M
-```  
-  
-* [2] lua_hotupdate
-  <br>https://github.com/asqbtcupid/lua_hotupdate
-  <br>Lua 5.1.
-
-  Using a fake ENV, the module's init statements result in noop.
-
 How to run test
 ------------------
 Run main.lua in test dir.
@@ -148,3 +127,24 @@ function M.foo() log("Old") end
 return M
 ```
 Todo: replace module returned table or function but do not replace global.
+
+Reference
+---------
+* [1] hotfix by tickbh
+  <br>https://github.com/tickbh/td_rlua/blob/11523931b0dd271ad4c5e9c532a9d3bae252a264/td_rlua/src/hotfix.rs
+  <br>http://www.cnblogs.com/tickbh/articles/5459120.html (In Chinese)
+  <br>Lua 5.2/5.3.
+  
+  Can only update global functions.
+  
+```
+local M = {}
++ function M.foo() end  -- Can not add M.foo().
+return M
+```  
+  
+* [2] lua_hotupdate
+  <br>https://github.com/asqbtcupid/lua_hotupdate
+  <br>Lua 5.1.
+
+  Using a fake ENV, the module's init statements result in noop.
