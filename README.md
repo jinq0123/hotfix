@@ -132,7 +132,8 @@ local log = function() end
 function M.foo() log("Old") end
 return M
 ```
-Todo: replace module returned table or function but do not replace global.
+hotfix.add_protect{print} can protect print function from being replaced.
+But it also means that log can not be updated.
 
 Reference
 ---------
