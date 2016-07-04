@@ -68,12 +68,13 @@ local function update_func(new_func, old_func, name, deep)
         if not name then break end
         local old_value = old_upvalue_map[name]
         if old_value then
-            if type(old_value) ~= type(value) then
+            local type_old_value = type(old_value)
+            if type_old_value ~= type(value) then
                 debug.setupvalue(new_func, i, old_value)
                 log_dbg(name, value, old_value)
-            elseif type(old_value) == "function" then
+            elseif type_old_value == "function" then
                 update_func(value, old_value, name, deep)
-            elseif type(old_value) == "table" then
+            elseif type_old_value == "table" then
                 update_table(value, old_value, name, deep)
                 debug.setupvalue(new_func, i, old_value)
             else
@@ -96,14 +97,14 @@ local function update_table(new_table, old_table, name, deep)
     -- Todo: name may be func or table! update it!
     for name, value in pairs(new_table) do
         local old_value = old_table[name]
-        if type(value) ~= type(old_value) then
+        local type_value = type(value)
+        if type_value ~= type(old_value) then
             old_table[name] = value
             M.log_debug(string.format("%sUpdate field '%s': (%s) -> (%s)",
                 deep, name, tostring(old_value), tostring(value)))
-        elseif type(value) == "function" then
+        elseif type_value == "function" then
             update_func(value, old_value, name, deep)
-            old_table[name] = value  -- Set new function with old upvalues.
-        elseif type(value) == "table" then
+        elseif type_value == "table" then
             update_table(value, old_value, name, deep)
         end
         -- Todo: Delete keys that are old functions.
