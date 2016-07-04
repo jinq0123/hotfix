@@ -171,6 +171,19 @@ run_test([[
         assert("old" == test[test])
     end)
 
+log("Test table.fuction.table.function...")
+run_test([[
+        local M = {}
+        local t = { tf = function() end }
+        function M.mf() t.t = 123 end
+        return M
+    ]], nil, [[
+        local M = {}
+        local t = { tf = function() end }
+        function M.mf() t.test = 123 end
+        return M
+    ]], nil)
+
 -- Todo: Test metatable update
 -- Todo: Test registry update
 
