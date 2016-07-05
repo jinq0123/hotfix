@@ -1,6 +1,12 @@
 # hotfix helper
 Example to use hotfix.
 
+hotfix_helper
+---------------
+hotfix_helper use lfs to record file time and hotfix modified modules in check().
+hotfix_helper reload hotfix_module_names to get module names,
+ which can add or remove dynamically.
+
 How to run
 -----------
 Need lfs (https://github.com/keplerproject/luafilesystem)
