@@ -8,6 +8,8 @@ local hotfix = require("hotfix")
 hotfix.hotfix_module("mymodule.sub_module")
 ```
 
+helper/hotfix_helper.lua is an example to hotfix modified modules using lfs.
+
 hotfix_module(module_name)
 ---------------------------
 hotfix_module() uses package.searchpath(module_name, package.path)
