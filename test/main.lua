@@ -184,6 +184,40 @@ run_test([[
         return M
     ]], nil)
 
+log("Test same upvalue (issue #1) ...")
+run_test([[
+        local M = {}
+        local l = {}
+        
+        function M.func1()
+        end
+        function M.func2()
+            l[10] = 10
+            return l
+        end
+
+        return M
+    ]],
+    function() assert(test.func2()[10] == 10) end,
+    [[
+        local M = {}
+        local l = {}
+        
+        function M.func1()
+            l[10] = 10
+            return l
+        end
+        function M.func2()
+            l[10] = 10
+            return l
+        end
+        
+        return M
+    ]],
+    function()
+        assert(tostring(test.func1()) == tostring(test.func2()))
+    end)
+
 -- Todo: Test metatable update
 -- Todo: Test registry update
 
