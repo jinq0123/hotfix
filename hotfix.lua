@@ -203,9 +203,8 @@ function M.hotfix_module(module_name)
 
     local file_path = assert(package.searchpath(module_name, package.path))
     local fp = assert(io.open(file_path))
-    io.input(file_path)
-    local chunk = io.read("*all")
-    io.close(fp)
+    local chunk = fp:read("*all")
+    fp:close()
 
     -- Load chunk.
     local func = assert(load(chunk, '@'..file_path))
