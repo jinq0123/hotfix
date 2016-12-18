@@ -208,7 +208,7 @@ function M.hotfix_module(module_name)
     io.close(fp)
 
     -- Load chunk.
-    local func = assert(load(chunk))
+    local func = assert(load(chunk, '@'..file_path))
     local ok, obj = assert(pcall(func))
     if nil == obj then obj = true end  -- obj may be false
 
