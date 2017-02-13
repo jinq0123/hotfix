@@ -137,6 +137,13 @@ return M
 hotfix.add_protect{print} can protect print function from being replaced.
 But it also means that log can not be updated.
 
+Known issure
+--------------
+* Can not load utf8 with BOM.
+```
+hotfix.lua:210: file.lua:1: unexpected symbol near '<\239>'
+```
+
 Reference
 ---------
 * [1] hotfix by tickbh
