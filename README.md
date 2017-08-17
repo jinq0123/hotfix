@@ -12,14 +12,9 @@ helper/hotfix_helper.lua is an example to hotfix modified modules using lfs.
 
 hotfix_module(module_name)
 ---------------------------
-hotfix_module() will skip unloaded module, that is,
-the module must be loaded such as `require`d before it can be hot fixed.
-* There will be no unexpected loading.
-* Work around the issue of "Three dots module name will be nil". See below.
-
 hotfix_module() uses package.searchpath(module_name, package.path)
  to search the path of module.
-The module is loaded and the returned value is updated to
+The module is reloaded and the returned value is updated to
  package.loaded[module_name].
 If the returned value is nil, then package.loaded[module_name]
  is assigned to true.
@@ -41,6 +36,11 @@ require("hotfix").hotfix_module("test")
 test.func()  -- "new"  
 func()       -- "old"
 ```
+
+hotfix_module() will skip unloaded module, that is,
+the module must be loaded such as `require`d before it can be hot fixed.
+* There will be no unexpected loading.
+* Work around the issue of "Three dots module name will be nil". See below.
 
 Todo: Replace functions of local variables in all threads using:
 
