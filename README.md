@@ -139,10 +139,18 @@ But it also means that log can not be updated.
 
 Known issure
 --------------
-* Can not load utf8 with BOM.
+### Can not load utf8 with BOM.
 ```
 hotfix.lua:210: file.lua:1: unexpected symbol near '<\239>'
 ```
+### Three dots module name will be nil.
+```lua
+--- test.lua.
+-- @module test
+local module_name = ...
+print(module_name)
+```
+`require("test")` will print "test", but hotfix which uses 'load()' will print "nil".
 
 Reference
 ---------
