@@ -8,14 +8,14 @@ local hotfix = require("hotfix")
 hotfix.hotfix_module("mymodule.sub_module")
 ```
 
-`helper/hotfix_helper.lua` is an example to hotfix modified modules using lfs.
+`helper/hotfix_helper.lua` is an example to hotfix modified modules using `lfs`.
 
 `hotfix_module(module_name)`
 ---------------------------
 `hotfix_module()` uses `package.searchpath(module_name, package.path)`
  to search the path of module.
 The module is reloaded and the returned value is updated to `package.loaded[module_name]`.
-If the returned value is `nil`, then `package.loaded[module_name]` is assigned to true.
+If the returned value is `nil`, then `package.loaded[module_name]` is assigned to `true`.
 `hotfix_module()` returns the final value of `package.loaded[module_name]`.
 
 `hotfix_module()` will skip unloaded module to avoid unexpected loading,
@@ -49,7 +49,7 @@ Why not protect the global variables
 -------------------------------------
 We can protect the glocal variables on loading.
 
-[1] uses a read only `ENV` to load.
+* [1] uses a read only `ENV` to load.
 ```lua
     local env = {}
     setmetatable(env, { __index = _G })
@@ -75,7 +75,7 @@ nil
 123
 </pre>
 
-[2] uses a fake `ENV` to load and ignores all operations.
+* [2] uses a fake `ENV` to load and ignores all operations.
 In this case, we can not init new local variables.
 ```lua
 local M = {}
@@ -115,7 +115,7 @@ How to run test
 ------------------
 Run `main.lua` in test dir.
 `main.lua` will write a `test.lua` file and hotfix it.
-`main.lua` will write log to log.txt.
+`main.lua` will write log to `log.txt`.
 <pre>
 D:\Jinq\Git\hotfix\test>..\..\..\tools\lua-5.3.2_Win64_bin\lua53
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
@@ -125,8 +125,8 @@ main.lua:80: assertion failed!
 
 Unexpected update
 -------------------
-log function is changed from `print()` to an empty function.
-The hotfix will replace all `print()` to an empty function which is totally unexpected.
+`log` function is changed from `print` to an empty function.
+The hotfix will replace all `print` to an empty function which is totally unexpected.
 ```lua
 local M = {}
 local log = print
