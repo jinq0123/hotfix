@@ -37,11 +37,10 @@ test.func()  -- "new"
 func()       -- "old"
 ```
 
-hotfix_module() will skip unloaded module, that is,
-the module must be loaded such as `require`d before it can be hot fixed.
-* There will be no unexpected loading.
-* Work around the issue of "Three dots module name will be nil". See below.
-
+hotfix_module() will skip unloaded module to avoid unexpected loading,
+and also to work around the issue of
+ ["Three dots module name will be nil"](https://github.com/jinq0123/hotfix#three-dots-module-name-will-be-nil).
+ 
 Todo: Replace functions of local variables in all threads using:
 
     debug.getlocal ([thread,] f, local)
@@ -142,7 +141,7 @@ return M
 hotfix.add_protect{print} can protect print function from being replaced.
 But it also means that log can not be updated.
 
-Known issure
+Known issue
 --------------
 ### Can not load utf8 with BOM.
 ```
