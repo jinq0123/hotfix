@@ -3,22 +3,24 @@ Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
 Usage
 -----
-```
+```lua
 local hotfix = require("hotfix")
 hotfix.hotfix_module("mymodule.sub_module")
 ```
 
-helper/hotfix_helper.lua is an example to hotfix modified modules using lfs.
+`helper/hotfix_helper.lua` is an example to hotfix modified modules using lfs.
 
-hotfix_module(module_name)
+`hotfix_module(module_name)`
 ---------------------------
-hotfix_module() uses package.searchpath(module_name, package.path)
+`hotfix_module()` uses `package.searchpath(module_name, package.path)`
  to search the path of module.
-The module is reloaded and the returned value is updated to
- package.loaded[module_name].
-If the returned value is nil, then package.loaded[module_name]
- is assigned to true.
-hotfix_module() returns the final value of package.loaded[module_name].
+The module is reloaded and the returned value is updated to `package.loaded[module_name]`.
+If the returned value is `nil`, then `package.loaded[module_name]` is assigned to true.
+`hotfix_module()` returns the final value of `package.loaded[module_name]`.
+
+`hotfix_module()` will skip unloaded module to avoid unexpected loading,
+and also to work around the issue of
+ ["Three dots module name will be nil"](https://github.com/jinq0123/hotfix#three-dots-module-name-will-be-nil).
 
 Functons are updated to new ones but old upvalues are kept.
 Old tables are kept and new fields are inserted.
@@ -26,8 +28,8 @@ All references to old functions are replaced to new ones.
 
 The module may change any global variables if it want to.
 
-Local variable which is not referenced by _G is not updated.
-```
+Local variable which is not referenced by `_G` is not updated.
+```lua
 -- test.lua: return { function func() return "old" end }
 local test = require("test")  -- referenced by _G.package.loaded["test"]
 local func = test.func        -- is not upvalue nor is referenced by _G
@@ -37,27 +39,26 @@ test.func()  -- "new"
 func()       -- "old"
 ```
 
-hotfix_module() will skip unloaded module to avoid unexpected loading,
-and also to work around the issue of
- ["Three dots module name will be nil"](https://github.com/jinq0123/hotfix#three-dots-module-name-will-be-nil).
- 
 Todo: Replace functions of local variables in all threads using:
-
+```lua
     debug.getlocal ([thread,] f, local)
     debug.setlocal ([thread,] level, local, value)
+```
 
 Why not protect the global variables
 -------------------------------------
 We can protect the glocal variables on loading.
 
-[1] uses a read only ENV to load.
+[1] uses a read only `ENV` to load.
+```lua
     local env = {}
     setmetatable(env, { __index = _G })
     load(chunk, check_name, 't', env)
+```
 
 But it can not stop indirect write.
 Global variables may be changed.
-In the following example, t is OK but math.sin is changed.
+In the following example, `t` is OK but `math.sin` is changed.
 
 <pre>
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
@@ -74,9 +75,9 @@ nil
 123
 </pre>
 
-[2] uses a fake ENV to load and ignores all operations.
+[2] uses a fake `ENV` to load and ignores all operations.
 In this case, we can not init new local variables.
-```
+```lua
 local M = {}
 + local log = require("log")  -- Can not require!
 function M.foo()
@@ -85,9 +86,9 @@ end
 return M
 ```
 
-Another problem is the new function's _ENV is not the real ENV.
-Following test will fail because set_global() has a protected ENV.
-```
+Another problem is the new function's `_ENV` is not the real `ENV`.
+Following test will fail because `set_global()` has a protected `ENV`.
+```lua
 log("New upvalue which is a function set global...")
 run_test([[
         local M = {}
@@ -112,9 +113,9 @@ run_test([[
 
 How to run test
 ------------------
-Run main.lua in test dir.
-main.lua will write a test.lua file and hotfix it.
-main.lua will write log to log.txt.
+Run `main.lua` in test dir.
+`main.lua` will write a `test.lua` file and hotfix it.
+`main.lua` will write log to log.txt.
 <pre>
 D:\Jinq\Git\hotfix\test>..\..\..\tools\lua-5.3.2_Win64_bin\lua53
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
@@ -124,22 +125,22 @@ main.lua:80: assertion failed!
 
 Unexpected update
 -------------------
-log function is changed from print() to an empty function.
-The hotfix will replace all print() to an empty function which is totally unexpected.
-```
+log function is changed from `print()` to an empty function.
+The hotfix will replace all `print()` to an empty function which is totally unexpected.
+```lua
 local M = {}
 local log = print
 function M.foo() log("Old") end
 return M
 ```
-```
+```lua
 local M = {}
 local log = function() end
 function M.foo() log("Old") end
 return M
 ```
-hotfix.add_protect{print} can protect print function from being replaced.
-But it also means that log can not be updated.
+`hotfix.add_protect{print}` can protect `print` function from being replaced.
+But it also means that `log` can not be updated.
 
 Known issue
 --------------
@@ -147,14 +148,14 @@ Known issue
 ```
 hotfix.lua:210: file.lua:1: unexpected symbol near '<\239>'
 ```
-### Three dots module name will be nil.
+### Three dots module name will be `nil`.
 ```lua
 --- test.lua.
 -- @module test
 local module_name = ...
 print(module_name)
 ```
-`require("test")` will print "test", but hotfix which uses 'load()' will print "nil".
+`require("test")` will print "test", but hotfix which uses `load()` will print "nil".
 
 Reference
 ---------
@@ -165,7 +166,7 @@ Reference
   
   Can only update global functions.
   
-```
+```lua
 local M = {}
 + function M.foo() end  -- Can not add M.foo().
 return M
@@ -175,4 +176,4 @@ return M
   <br>https://github.com/asqbtcupid/lua_hotupdate
   <br>Lua 5.1.
 
-  Using a fake ENV, the module's init statements result in noop.
+  Using a fake `ENV`, the module's init statements result in noop.
