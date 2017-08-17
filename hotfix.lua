@@ -198,6 +198,11 @@ end  -- add_self_to_protect
 -- Returns package.loaded[module_name].
 function M.hotfix_module(module_name)
     assert("string" == type(module_name))
+    if not package.loaded[module_name] then
+        M.log_debug("Hot fix skips unloaded module: " .. module_name)
+        return package.loaded[module_name]
+    end
+
     M.log_debug("Hot fix module: " .. module_name)
     add_self_to_protect()
 
