@@ -14,6 +14,8 @@ hotfix_module(module_name)
 ---------------------------
 hotfix_module() will skip unloaded module, that is,
 the module must be loaded such as `require`d before it can be hot fixed.
+* There will be no unexpected loading.
+* Work around the issue of "Three dots module name will be nil". See below.
 
 hotfix_module() uses package.searchpath(module_name, package.path)
  to search the path of module.
