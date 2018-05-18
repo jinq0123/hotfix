@@ -156,6 +156,7 @@ local function replace_functions(obj)
             if new_func then
                 assert("function" == type(value))
                 debug.setupvalue(obj, i, new_func)
+                replace_functions(new_func)
             else
                 replace_functions(value)
             end
@@ -177,6 +178,8 @@ local function replace_functions(obj)
             replace_functions(k)
         end
         if not new_v then replace_functions(v) end
+        if new_k then replace_functions(new_k) end
+        if new_v then replace_functions(new_v) end
     end  -- for k, v
     for k, v in pairs(new) do obj[k] = v end
 end  -- replace_functions(obj)
