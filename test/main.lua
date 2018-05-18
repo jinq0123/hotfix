@@ -218,6 +218,40 @@ run_test([[
         assert(tostring(test.func1()) == tostring(test.func2()))
     end)
 
+log("Test upvalue (issue #3) ...")
+run_test([[
+        local M = {}
+        local t = {}
+
+        function M.hello() return "hello" end
+
+        t.hello = M.hello
+
+        function M.func()
+            return t.hello()
+        end
+
+        return M
+    ]],
+    function() assert(test.func() == "hello") end,
+    [[
+        local M = {}
+        local t = {}
+
+        function M.hello() return "hello2" end
+
+        t.hello = M.hello
+
+        function M.func()
+            return t.hello()
+        end
+
+        return M
+    ]],
+    function()
+        assert(test.func() == "hello2")
+    end)
+
 -- Todo: Test metatable update
 -- Todo: Test registry update
 
