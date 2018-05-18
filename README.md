@@ -26,7 +26,7 @@ Functons are updated to new ones but old upvalues are kept.
 Old tables are kept and new fields are inserted.
 All references to old functions are replaced to new ones.
 
-The module may change any global variables if it want to.
+The module may change any global variables if it wants to.
 
 Local variable which is not referenced by `_G` is not updated.
 ```lua
