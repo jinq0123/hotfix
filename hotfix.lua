@@ -5,137 +5,11 @@ Author: Jin Qing ( http://blog.csdn.net/jq0123 )
 
 local M = {}
 
+local module_updater = require("module_updater")
 local functions_replacer = require("functions_replacer")
-
-local update_table
-local update_func
-
--- Updated signature set to prevent self-reference dead loop.
-local updated_sig = {}
-
--- Map old function to new functions.
--- Used to replace functions finally.
-local updated_func_map = {}
 
 -- Do not update and replace protected objects.
 local protected = {}
-
--- Check if function or table has been updated. Return true if updated.
-local function check_updated(new_obj, old_obj, name, deep)
-    local signature = string.format("new(%s) old(%s)",
-        tostring(new_obj), tostring(old_obj))
-    M.log_debug(string.format("%sUpdate %s: %s", deep, name, signature))
-
-    if new_obj == old_obj then
-        M.log_debug(deep .. "  Same")
-        return true
-    end
-    if updated_sig[signature] then
-        M.log_debug(deep .. "  Already updated")
-        return true
-    end
-    updated_sig[signature] = true
-    return false
-end
-
--- Update new function with upvalues of old function.
--- Parameter name and deep are only for log.
-function update_func(new_func, old_func, name, deep)
-    assert("function" == type(new_func))
-    assert("function" == type(old_func))
-    if protected[old_func] then return end
-    if check_updated(new_func, old_func, name, deep) then return end
-    deep = deep .. "  "
-    updated_func_map[old_func] = new_func
-
-    -- Get upvalues of old function.
-    local old_upvalue_map = {}
-    for i = 1, math.huge do
-        local name, value = debug.getupvalue(old_func, i)
-        if not name then break end
-        old_upvalue_map[name] = value
-    end
-
-    local function log_dbg(name, from, to)
-        M.log_debug(string.format("%ssetupvalue %s: (%s) -> (%s)",
-            deep, name, tostring(from), tostring(to)))
-    end
-
-    -- Update new upvalues with old.
-    for i = 1, math.huge do
-        local name, value = debug.getupvalue(new_func, i)
-        if not name then break end
-        local old_value = old_upvalue_map[name]
-        if old_value then
-            local type_old_value = type(old_value)
-            if type_old_value ~= type(value) then
-                debug.setupvalue(new_func, i, old_value)
-                log_dbg(name, value, old_value)
-            elseif type_old_value == "function" then
-                update_func(value, old_value, name, deep)
-            elseif type_old_value == "table" then
-                update_table(value, old_value, name, deep)
-                debug.setupvalue(new_func, i, old_value)
-            else
-                debug.setupvalue(new_func, i, old_value)
-                log_dbg(name, value, old_value)
-            end
-        end  -- if old_value
-    end  -- for i
-end  -- update_func()
-
--- Compare 2 tables and update old table. Keep the old data.
-function update_table(new_table, old_table, name, deep)
-    assert("table" == type(new_table))
-    assert("table" == type(old_table))
-    if protected[old_table] then return end
-    if check_updated(new_table, old_table, name, deep) then return end
-    deep = deep .. "  "
-
-    -- Compare 2 tables, and update old table.
-    for key, value in pairs(new_table) do
-        local old_value = old_table[key]
-        local type_value = type(value)
-        if type_value ~= type(old_value) then
-            old_table[key] = value
-            M.log_debug(string.format("%sUpdate field %s: (%s) -> (%s)",
-                deep, key, tostring(old_value), tostring(value)))
-        elseif type_value == "function" then
-            update_func(value, old_value, key, deep)
-        elseif type_value == "table" then
-            update_table(value, old_value, key, deep)
-        end
-    end  -- for
-
-    -- Update metatable.
-    local old_meta = debug.getmetatable(old_table)
-    local new_meta = debug.getmetatable(new_table)
-    if type(old_meta) == "table" and type(new_meta) == "table" then
-        update_table(new_meta, old_meta, name.."'s Meta", deep)
-    end
-end  -- update_table()
-
--- Update new loaded object with package.loaded[module_name].
-local function update_loaded_module(new_obj, module_name)
-    assert(nil ~= new_obj)
-    assert("string" == type(module_name))
-    local old_obj = package.loaded[module_name]
-    local new_type = type(new_obj)
-    local old_type = type(old_obj)
-    if new_type == old_type then
-        if "table" == new_type then
-            update_table(new_obj, old_obj, module_name, "")
-            return
-        end
-        if "function" == new_type then
-            update_func(new_obj, old_obj, module_name, "")
-            return;
-        end
-    end  -- if new_type == old_type
-    M.log_debug(string.format("Directly replace module: old(%s) -> new(%s)",
-        tostring(old_obj), tostring(new_obj)))
-    package.loaded[module_name] = new_obj
-end  -- update_loaded_module
 
 -- To protect self.
 local function add_self_to_protect()
@@ -147,11 +21,31 @@ local function add_self_to_protect()
         M.log_debug,
         M.add_protect,
         M.remove_protect,
+        module_updater,
+        module_updater.log_debug,
+        module_updater.update_loaded_module,
         functions_replacer,
         functions_replacer.replace_all,
     }
 end  -- add_self_to_protect
 
+-- Hotfix module with new module object.
+-- Update package.loaded[module_name] and replace all functions.
+-- module_obj is the newly loaded module object.
+local function hotfix_module_with_obj(module_name, module_obj)
+    assert("string" == type(module_name))
+    add_self_to_protect()
+    module_updater.log_debug = M.log_debug
+
+    -- Step 1: Update package.loaded[module_name], recording updated functions.
+    local updated_function_map = module_updater.update_loaded_module(
+        module_name, protected, module_obj)
+    -- Step 2: Replace old functions with new ones in module_obj, _G and registry.
+    functions_replacer.replace_all(protected, updated_function_map, module_obj)
+end  -- hotfix_module_with_obj()
+
+-- Hotfix module.
+-- Skip unloaded module.
 -- Usage: hotfix_module("mymodule.sub_module")
 -- Returns package.loaded[module_name].
 function M.hotfix_module(module_name)
@@ -160,9 +54,7 @@ function M.hotfix_module(module_name)
         M.log_debug("Skip unloaded module: " .. module_name)
         return package.loaded[module_name]
     end
-
     M.log_debug("Hot fix module: " .. module_name)
-    add_self_to_protect()
 
     local file_path = assert(package.searchpath(module_name, package.path))
     local fp = assert(io.open(file_path))
@@ -174,15 +66,7 @@ function M.hotfix_module(module_name)
     local ok, obj = assert(pcall(func))
     if nil == obj then obj = true end  -- obj may be false
 
-    -- Update package.loaded[module_name].
-    updated_sig = {}
-    updated_func_map = {}
-    do
-        update_loaded_module(obj, module_name)
-        functions_replacer.replace_all(protected, updated_func_map, obj)
-    end  -- do
-    updated_func_map = {}
-    updated_sig = {}
+    hotfix_module_with_obj(module_name, obj)
     return package.loaded[module_name]
 end
 
