@@ -1,11 +1,13 @@
 --- Replace functions of table or upvalue.
+-- Search for the old functions and replace them with new ones.
 
 local M = {}
 
--- Objects that have replaced functions.
+-- Objects whose functions have been replaced already.
+-- Each objects need to be replaced once.
 local replaced_obj = {}
 
--- Map old function to new functions.
+-- Map old functions to new functions.
 -- Used to replace functions finally.
 -- Set to hotfix.updated_func_map.
 local updated_func_map = {}
