@@ -265,7 +265,26 @@ run_test([[
         -- Because module is considered unloaded, and will not hotfix.
         assert(test == false)
     end)
-    
+
+log("Test three dots module name...")
+run_test([[
+        local M = {}
+        M.module_name = ...
+        return M
+    ]],
+    function() assert(test.module_name == "test") end,
+    [[
+        local M = {}
+        M.module_name2 = ...
+        return M
+    ]],
+    function()
+        assert(test.module_name == "test")
+        -- See https://github.com/jinq0123/hotfix#three-dots-module-name-will-be-nil
+        -- assert(test.module_name2 == "test")
+        assert(test.module_name2 == nil)
+    end)
+
 -- Todo: Test metatable update
 -- Todo: Test registry update
 
