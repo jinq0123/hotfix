@@ -1,4 +1,8 @@
 --- Updater to update loaded module.
+-- Updating a table is to update metatable and sub-table of the old table,
+--   and to update functions of the old table, keeping value fields.
+-- Updating a function is to copy upvalues of old function to new function.
+-- Functions will be replaced later after updating.
 
 local M = {}
 
@@ -82,7 +86,7 @@ function update_func(new_func, old_func, name, deep)
     end  -- for i
 end  -- update_func()
 
--- Compare 2 tables and update old table. Keep the old data.
+-- Compare 2 tables and update the old table. Keep the old data.
 function update_table(new_table, old_table, name, deep)
     assert("table" == type(new_table))
     assert("table" == type(old_table))
