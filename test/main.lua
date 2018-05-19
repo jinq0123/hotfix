@@ -252,6 +252,20 @@ run_test([[
         assert(test.func() == "hello2")
     end)
 
+log("Test module returns false...")
+run_test([[
+        local M = {}
+        return false
+    ]], nil,
+    [[
+        local M = {}
+        return M
+    ]],
+    function()
+        -- Because module is considered unloaded, and will not hotfix.
+        assert(test == false)
+    end)
+    
 -- Todo: Test metatable update
 -- Todo: Test registry update
 
