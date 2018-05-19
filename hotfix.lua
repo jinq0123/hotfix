@@ -5,6 +5,8 @@ Author: Jin Qing ( http://blog.csdn.net/jq0123 )
 
 local M = {}
 
+local functions_replacer = require("functions_replacer")
+
 local update_table
 local update_func
 
@@ -14,9 +16,6 @@ local updated_sig = {}
 -- Map old function to new functions.
 -- Used to replace functions finally.
 local updated_func_map = {}
-
--- Objects that have replaced functions.
-local replaced_obj = {}
 
 -- Do not update and replace protected objects.
 local protected = {}
@@ -138,52 +137,6 @@ local function update_loaded_module(new_obj, module_name)
     package.loaded[module_name] = new_obj
 end  -- update_loaded_module
 
--- Replace all updated functions.
--- Record all visited objects.
-local function replace_functions(obj)
-    if protected[obj] then return end
-    local obj_type = type(obj)
-    if "function" ~= obj_type and "table" ~= obj_type then return end
-    if replaced_obj[obj] then return end
-    replaced_obj[obj] = true
-    assert(obj ~= updated_func_map)
-
-    if "function" == obj_type then
-        for i = 1, math.huge do
-            local name, value = debug.getupvalue(obj, i)
-            if not name then return end
-            local new_func = updated_func_map[value]
-            if new_func then
-                assert("function" == type(value))
-                debug.setupvalue(obj, i, new_func)
-                replace_functions(new_func)
-            else
-                replace_functions(value)
-            end
-        end  -- for
-        assert(false, "Can not reach here!")
-    end  -- if "function"
-
-    -- for table
-    replace_functions(debug.getmetatable(obj))
-    local new = {}  -- to assign new fields
-    for k, v in pairs(obj) do
-        local new_k = updated_func_map[k]
-        local new_v = updated_func_map[v]
-        if new_k then
-            obj[k] = nil  -- delete field
-            new[new_k] = new_v or v
-        else
-            obj[k] = new_v or v
-            replace_functions(k)
-        end
-        if not new_v then replace_functions(v) end
-        if new_k then replace_functions(new_k) end
-        if new_v then replace_functions(new_v) end
-    end  -- for k, v
-    for k, v in pairs(new) do obj[k] = v end
-end  -- replace_functions(obj)
-
 -- To protect self.
 local function add_self_to_protect()
     M.add_protect{
@@ -194,6 +147,8 @@ local function add_self_to_protect()
         M.log_debug,
         M.add_protect,
         M.remove_protect,
+        functions_replacer,
+        functions_replacer.replace_all,
     }
 end  -- add_self_to_protect
 
@@ -224,13 +179,7 @@ function M.hotfix_module(module_name)
     updated_func_map = {}
     do
         update_loaded_module(obj, module_name)
-
-        if next(updated_func_map) then
-            replaced_obj = {}
-            replace_functions(_G)
-            replace_functions(debug.getregistry())
-            replaced_obj = {}
-        end  -- if
+        functions_replacer.replace_all(protected, updated_func_map, obj)
     end  -- do
     updated_func_map = {}
     updated_sig = {}
