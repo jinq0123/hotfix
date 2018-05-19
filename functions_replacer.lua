@@ -79,8 +79,11 @@ function replace_functions(obj)
 end  -- replace_functions(obj)
 
 --- Replace all old functions with new ones.
---- Replace in updated_func_map's value, _G and debug.getregistry().
-function M.replace_all(a_protected, an_updated_func_map)
+-- Replace in new_obj, _G and debug.getregistry().
+-- a_protected is a list of protected object.
+-- an_updated_func_map is a map from old function to new function.
+-- new_obj is the newly loaded module.
+function M.replace_all(a_protected, an_updated_func_map, new_obj)
     protected = a_protected
     updated_func_map = an_updated_func_map
     assert(type(protected) == "table")
@@ -90,9 +93,7 @@ function M.replace_all(a_protected, an_updated_func_map)
     end
 
     replaced_obj = {}
-    for _, new_func in pairs(updated_func_map) do
-        replace_functions(new_func)  -- new_func is not in _G
-    end  -- for
+    replace_functions(new_obj)  -- new_obj may be not in _G
     replace_functions(_G)
     replace_functions(debug.getregistry())
     replaced_obj = {}

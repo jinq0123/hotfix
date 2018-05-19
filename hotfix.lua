@@ -179,7 +179,7 @@ function M.hotfix_module(module_name)
     updated_func_map = {}
     do
         update_loaded_module(obj, module_name)
-        functions_replacer.replace_all(protected, updated_func_map)
+        functions_replacer.replace_all(protected, updated_func_map, obj)
     end  -- do
     updated_func_map = {}
     updated_sig = {}
