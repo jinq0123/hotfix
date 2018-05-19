@@ -48,12 +48,6 @@ test.func()  -- "new"
 func()       -- "old"
 ```
 
-Todo: Replace functions of local variables in all threads using:
-```lua
-    debug.getlocal ([thread,] f, local)
-    debug.setlocal ([thread,] level, local, value)
-```
-
 Why not protect the global variables
 -------------------------------------
 We can protect the glocal variables on loading.
