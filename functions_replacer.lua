@@ -30,7 +30,6 @@ local function replace_functions_in_upvalues(function_object)
         if new_func then
             assert("function" == type(value))
             debug.setupvalue(obj, i, new_func)
-            replace_functions(new_func)
         else
             replace_functions(value)
         end
@@ -58,8 +57,6 @@ local function replace_functions_in_table(table_object)
             replace_functions(k)
         end
         if not new_v then replace_functions(v) end
-        if new_k then replace_functions(new_k) end
-        if new_v then replace_functions(new_v) end
     end  -- for k, v
     for k, v in pairs(new) do obj[k] = v end
 end  -- replace_functions_in_table()
@@ -93,6 +90,9 @@ function M.replace_all(a_protected, an_updated_func_map)
     end
 
     replaced_obj = {}
+    for _, new_func in pairs(updated_func_map) do
+        replace_functions(new_func)  -- new_func is not in _G
+    end  -- for
     replace_functions(_G)
     replace_functions(debug.getregistry())
     replaced_obj = {}
