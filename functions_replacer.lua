@@ -2,20 +2,21 @@
 
 local M = {}
 
+-- Objects that have replaced functions.
+local replaced_obj = {}
+
 -- Map old function to new functions.
 -- Used to replace functions finally.
-M.updated_func_map = {}
-
--- Objects that have replaced functions.
-M.replaced_obj = {}
+-- Set to hotfix.updated_func_map.
+local updated_func_map = {}
 
 -- Do not update and replace protected objects.
--- Set to hotfix.protected
-M.protected = {}
+-- Set to hotfix.protected.
+local protected = {}
 
 -- Replace all updated functions.
 -- Record all replaced objects in M.replaced_obj.
-function M.replace_functions(obj)
+local function replace_functions(obj)
     if protected[obj] then return end
     local obj_type = type(obj)
     if "function" ~= obj_type and "table" ~= obj_type then return end
@@ -58,5 +59,22 @@ function M.replace_functions(obj)
     end  -- for k, v
     for k, v in pairs(new) do obj[k] = v end
 end  -- replace_functions(obj)
+
+--- Replace all old functions with new ones.
+--- Replace in updated_func_map's value, _G and debug.getregistry().
+function M.replace_all(a_protected, an_updated_func_map)
+    protected = a_protected
+    updated_func_map = an_updated_func_map
+    assert(type(protected) == "table")
+    assert(type(updated_func_map) == "table")
+    if nil == next(updated_func_map) then
+        return
+    end
+
+    replaced_obj = {}
+    replace_functions(_G)
+    replace_functions(debug.getregistry())
+    replaced_obj = {}
+end  -- M.replace_all()
 
 return M
