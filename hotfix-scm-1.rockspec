@@ -1,7 +1,7 @@
 package = "hotfix"
 version = "scm-1"
 source = {
-   url = "https://github.com/jinq0123/hotfix",
+   url = "git://github.com/jinq0123/hotfix",
 }
 description = {
    summary = "Lua 5.2/5.3 hotfix. Hot update functions and keep old data.",
@@ -45,9 +45,9 @@ build = {
       functions_replacer = "functions_replacer.lua",
       hotfix = "hotfix.lua",
       module_updater = "module_updater.lua",
-   }
+   },
    copy_directories = {
       "helper",
       "test",
-   }
+   },
 }
