@@ -7,24 +7,18 @@ description = {
    summary = "Lua 5.2/5.3 hotfix. Hot update functions and keep old data.",
 
    detailed = [[
-Usage
------
-```lua
+hotfix reload the module and update the old module, keeping the old data.
+
+Usage:
+
 local hotfix = require("hotfix")
 hotfix.hotfix_module("mymodule.sub_module")
-```
 
-`helper/hotfix_helper.lua` is an example to hotfix modified modules using `lfs`.
-
-`hotfix_module(module_name)`
----------------------------
-`hotfix_module()` uses `package.searchpath(module_name, package.path)`
+hotfix_module() uses package.searchpath(module_name, package.path)
  to search the path of module.
-The module is reloaded and the returned value is updated to `package.loaded[module_name]`.
-If the returned value is `nil`, then `package.loaded[module_name]` is assigned to `true`.
-`hotfix_module()` returns the final value of `package.loaded[module_name]`.
+The module is reloaded and the returned value is updated to package.loaded[module_name].
 
-`hotfix_module()` will skip unloaded module to avoid unexpected loading.
+hotfix_module() will skip unloaded module to avoid unexpected loading.
 
 Functons are updated to new ones but old upvalues are kept.
 Old tables are kept and new fields are inserted.
@@ -48,6 +42,5 @@ build = {
    },
    copy_directories = {
       "helper",
-      "test",
    },
 }

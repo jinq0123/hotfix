@@ -1,6 +1,15 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
+Install
+-------
+Using [LuaRocks](https://luarocks.org): 
+```
+luarocks install --server=http://luarocks.org/dev hotfix
+```
+
+Or manually copy *.lua files into your Lua module path.
+
 Usage
 -----
 ```lua
