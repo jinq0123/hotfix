@@ -14,33 +14,37 @@ local updated_func_map = {}
 -- Set to hotfix.protected.
 local protected = {}
 
--- Replace all updated functions.
--- Record all replaced objects in M.replaced_obj.
-local function replace_functions(obj)
-    if protected[obj] then return end
-    local obj_type = type(obj)
-    if "function" ~= obj_type and "table" ~= obj_type then return end
-    if replaced_obj[obj] then return end
-    replaced_obj[obj] = true
+local replace_functions  -- forward declare
+
+-- Replace all updated functions in upvalues of function object.
+local function replace_functions_in_upvalues(function_object)
+    local obj = function_object
+    assert("function" == type(obj))
+    assert(not protected[obj])
     assert(obj ~= updated_func_map)
 
-    if "function" == obj_type then
-        for i = 1, math.huge do
-            local name, value = debug.getupvalue(obj, i)
-            if not name then return end
-            local new_func = updated_func_map[value]
-            if new_func then
-                assert("function" == type(value))
-                debug.setupvalue(obj, i, new_func)
-                replace_functions(new_func)
-            else
-                replace_functions(value)
-            end
-        end  -- for
-        assert(false, "Can not reach here!")
-    end  -- if "function"
+    for i = 1, math.huge do
+        local name, value = debug.getupvalue(obj, i)
+        if not name then return end
+        local new_func = updated_func_map[value]
+        if new_func then
+            assert("function" == type(value))
+            debug.setupvalue(obj, i, new_func)
+            replace_functions(new_func)
+        else
+            replace_functions(value)
+        end
+    end  -- for
+    assert(false, "Can not reach here!")
+end  -- replace_functions_in_upvalues()
 
-    -- for table
+-- Replace all updated functions in the table.
+local function replace_functions_in_table(table_object)
+    local obj = table_object
+    assert("table" == type(obj))
+    assert(not protected[obj])
+    assert(obj ~= updated_func_map)
+    
     replace_functions(debug.getmetatable(obj))
     local new = {}  -- to assign new fields
     for k, v in pairs(obj) do
@@ -58,6 +62,23 @@ local function replace_functions(obj)
         if new_v then replace_functions(new_v) end
     end  -- for k, v
     for k, v in pairs(new) do obj[k] = v end
+end  -- replace_functions_in_table()
+
+-- Replace all updated functions.
+-- Record all replaced objects in replaced_obj.
+function replace_functions(obj)
+    if protected[obj] then return end
+    local obj_type = type(obj)
+    if "function" ~= obj_type and "table" ~= obj_type then return end
+    if replaced_obj[obj] then return end
+    replaced_obj[obj] = true
+    assert(obj ~= updated_func_map)
+
+    if "function" == obj_type then
+        replace_functions_in_upvalues(obj)
+    else  -- table
+        replace_functions_in_table(obj)
+    end
 end  -- replace_functions(obj)
 
 --- Replace all old functions with new ones.
