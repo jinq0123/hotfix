@@ -1,8 +1,6 @@
 # hotfix helper
 Example to use hotfix.
 
-hotfix_helper
----------------
 hotfix_helper uses lfs to record file time and hotfix modified modules in check().
 hotfix_helper reloads hotfix_module_names to get module names,
  which can add or remove dynamically.

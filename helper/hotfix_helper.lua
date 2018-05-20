@@ -1,10 +1,15 @@
+--- Hotfix helper which hotfixes modified modules.
+-- Using lfs to detect files' modification.
+
 local M = { }
 
 local lfs = require("lfs")
 local hotfix = require("hotfix")
 
+-- Map file path to file time to detect modification.
 local path_to_time = { }
 
+-- global_objects which must not hotfix.
 local global_objects = {
     arg,
     assert,
@@ -46,10 +51,11 @@ local global_objects = {
     xpcall,
 }
 
+--- Check modules and hotfix.
 function M.check()
     local MOD_NAME = "hotfix_module_names"
     if not package.searchpath(MOD_NAME, package.path) then return end
-    package.loaded[MOD_NAME] = nil
+    package.loaded[MOD_NAME] = nil  -- always reload it
     local module_names = require(MOD_NAME)
 
     for _, module_name in pairs(module_names) do
