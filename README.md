@@ -1,6 +1,43 @@
 # hotfix
 Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
+What does hotfix do
+---------------------
+If we has a test.lua
+```lua
+local M = {}
+
+M.count = 0
+
+function M.func()
+    M.count = M.count + 1
+    return "v1"
+end
+
+return M
+```
+
+Require test and call func(), then count will be 1.
+```
+> test = require("test")                              
+> test.func()                                         
+v1                                                    
+> test.count                                          
+1                                                     
+```
+
+Change "v1" to "v2" in test.lua, then hotfix module test and call func() again.
+The result shows that func() has been updated, but the count is kept.
+```
+> hotfix = require("hotfix")                          
+> hotfix.hotfix_module("test")                        
+table: 0000000002752060                               
+> test.func()                                         
+v2                                                    
+> test.count                                          
+2                                                     
+```
+
 Install
 -------
 Using [LuaRocks](https://luarocks.org): 
