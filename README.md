@@ -3,7 +3,7 @@ Lua 5.2/5.3 hotfix. Hot update functions and keep old data.
 
 What does hotfix do
 ---------------------
-If we has a test.lua
+If we have a test.lua
 ```lua
 local M = {}
 
