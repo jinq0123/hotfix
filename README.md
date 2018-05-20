@@ -75,6 +75,7 @@ Old tables are kept and new fields are inserted.
 All references to old functions are replaced to new ones.
 
 The module may change any global variables if it wants to.
+See ["Why not protect the global variables" below](#why-not-protect-the-global-variables).
 
 Local variable which is not referenced by `_G` is not updated.
 ```lua
@@ -89,7 +90,7 @@ func()       -- "old"
 
 Why not protect the global variables
 -------------------------------------
-We can protect the glocal variables on loading.
+We can protect the global variables on loading in some ways, but there are other problems.
 
 * [1] uses a read only `ENV` to load.
 ```lua
