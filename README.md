@@ -42,7 +42,7 @@ Install
 -------
 Using [LuaRocks](https://luarocks.org): 
 ```
-luarocks install --server=http://luarocks.org/dev hotfix
+luarocks install hotfix
 ```
 
 Or manually copy `lua/hotfix` directory into your Lua module path.
