@@ -4,7 +4,7 @@
 local M = { }
 
 local lfs = require("lfs")
-local hotfix = require("hotfix")
+local hotfix = require("hotfix.hotfix")
 
 -- Map file path to file time to detect modification.
 local path_to_time = { }

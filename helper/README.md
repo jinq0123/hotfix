@@ -12,7 +12,7 @@ Need lfs (https://github.com/keplerproject/luafilesystem)
 <pre>
 E:\Git\Lua\hotfix\helper>lua53pp.exe
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
-> package.path = "../?.lua;" .. package.path
+> package.path = "../lua/?.lua;" .. package.path
 > require("main").run()
 test    1       2       3
 Hot fix module test (E:\Git\Lua\hotfix\helper\test.lua)
