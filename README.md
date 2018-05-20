@@ -54,7 +54,9 @@ local hotfix = require("hotfix")
 hotfix.hotfix_module("mymodule.sub_module")
 ```
 
-`helper/hotfix_helper.lua` is an example to hotfix modified modules using `lfs`.
+[`helper/hotfix_helper.lua`](helper/hotfix_helper.lua)
+ is an example to hotfix modified modules using `lfs`.
+ Please see [helper/README.md](helper/README.md).
 
 `hotfix_module(module_name)`
 ---------------------------
