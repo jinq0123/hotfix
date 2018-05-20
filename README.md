@@ -29,7 +29,7 @@ v1
 Change "v1" to "v2" in test.lua, then hotfix module test and call func() again.
 The result shows that func() has been updated, but the count is kept.
 ```
-> hotfix = require("hotfix")                          
+> hotfix = require("hotfix.hotfix")                          
 > hotfix.hotfix_module("test")                        
 table: 0000000002752060                               
 > test.func()                                         
@@ -45,12 +45,12 @@ Using [LuaRocks](https://luarocks.org):
 luarocks install --server=http://luarocks.org/dev hotfix
 ```
 
-Or manually copy *.lua files into your Lua module path.
+Or manually copy `lua/hotfix` directory into your Lua module path.
 
 Usage
 -----
 ```lua
-local hotfix = require("hotfix")
+local hotfix = require("hotfix.hotfix")
 hotfix.hotfix_module("mymodule.sub_module")
 ```
 
@@ -82,7 +82,7 @@ Local variable which is not referenced by `_G` is not updated.
 local test = require("test")  -- referenced by _G.package.loaded["test"]
 local func = test.func        -- is not upvalue nor is referenced by _G
 -- test.lua: return { function func() return "new" end }
-require("hotfix").hotfix_module("test")
+require("hotfix.hotfix").hotfix_module("test")
 test.func()  -- "new"  
 func()       -- "old"
 ```

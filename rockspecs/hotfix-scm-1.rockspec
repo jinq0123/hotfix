@@ -34,7 +34,6 @@ build = {
       ["hotfix.hotfix"] = "lua/hotfix/hotfix.lua",
       ["hotfix.internal.functions_replacer"] = "lua/hotfix/internal/functions_replacer.lua",
       ["hotfix.internal.module_updater"] = "lua/hotfix/internal/module_updater.lua",
-      ["hotfix.init"] = "lua/hotfix/init.lua"
    },
    copy_directories = {
       "helper",
