@@ -5,8 +5,8 @@ Author: Jin Qing ( http://blog.csdn.net/jq0123 )
 
 local M = {}
 
-local module_updater = require("module_updater")
-local functions_replacer = require("functions_replacer")
+local module_updater = require("hotfix.internal.module_updater")
+local functions_replacer = require("hotfix.internal.functions_replacer")
 
 -- Do not update and replace protected objects.
 local protected = {}

@@ -1,8 +1,8 @@
-package.path = "../?.lua;" .. package.path
+package.path = "../lua/?.lua;" .. package.path
 
 local M = {}
 
-local hotfix = require("hotfix")
+local hotfix = require("hotfix.hotfix")
 local test  -- = require("test")
 local tmp = {}  -- to store temp data
 
